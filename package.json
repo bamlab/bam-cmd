@@ -2,13 +2,14 @@
   "name": "bam",
   "version": "1.0.0",
   "description": "The bam command tool",
-  "main": "bam.js",
+  "main": "bam",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Nicolas Djambazian <nicolasd@bamlab.fr>",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.0.6",
     "commander": "^2.9.0",
     "inquirer": "^0.11.0"
   }

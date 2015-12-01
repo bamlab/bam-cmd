@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var inquirer = require('inquirer');
+
+console.log('deploy script');

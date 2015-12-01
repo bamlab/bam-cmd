@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+program
+	.version('0.1.0')
+	.description('BAM command line tool for common operations')
+	.command('install [repoName]', 'Install a BAM repository')
+	.command('deploy [env]', 'Deploy project on servers or the store')
+	.command('build', 'Build a project or an app')
+  	.parse(process.argv);
+
