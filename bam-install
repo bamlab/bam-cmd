@@ -1,6 +1,36 @@
 #!/usr/bin/env node
 
-var program = require('commander');
+var options = require('commander');
 var inquirer = require('inquirer');
+var q = require('bluebird');
 
-console.log('install script');
+function parseOptions() {
+	var repoName = null;
+	var repoNameDefer = q.defer();
+
+	options
+		.arguments('[repoName]')
+		.action(function(name) {
+			repoName = name;
+		})
+		.parse(process.argv);
+
+	if (repoName !== null) {
+		repoNameDefer.resolve(repoName);
+
+	} else { // Ask for a repo
+		inquirer.prompt({
+			name: 'repoName',
+			message: 'Which project do you want to install?'
+		}, function (answer) {
+			repoNameDefer.resolve(answer.repoName);
+		});
+	}
+	return repoNameDefer.promise;
+}
+
+function clone(repoName) {
+	console.log(repoName);
+}
+
+parseOptions().then(clone);
