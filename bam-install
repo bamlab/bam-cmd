@@ -4,7 +4,25 @@ var options = require('commander');
 var inquirer = require('inquirer');
 var $q = require('bluebird');
 var fs = require('fs');
-var exec = require('child_process').exec;
+var colors = require('colors');
+var childProcess = require('child_process');
+var path = require('path');
+
+
+var configFile = 'bam.js';
+
+
+var exec = function (cmd) {
+	var resDefer = $q.defer();
+	childProcess.exec(cmd, function (err, stdin, stderr) {
+		if (err === null) {
+			resDefer.resolve(stdin);
+		} else {
+			resDefer.reject(stderr);
+		}
+	});
+	return resDefer.promise;
+}
 
 function parseOptions() {
 	var repoName = null;
@@ -31,27 +49,46 @@ function parseOptions() {
 	return repoNameDefer.promise;
 }
 
-function clone(repoName) {
-	if (fs.readdirSync('.').length !== 0) {
-		return $q.reject('Directory not empty');
-	}
-	
-	exec('git clone git@github.com:bamlab/' + repoName + '.git', function(err, stdout, stderr){
-		console.log('err');
-		console.log(err);
-		console.log('stdout');
-		console.log(stdout);
-		console.log('stderr');
-		console.log(stderr);
-	});
-	
+function checkDirEmpty(param) {
+	return $q.promisify(fs.readdir)('.')
+		.then(function(list) {
+			if (list.length !== 0) {
+				return $q.reject('Directory not empty');
+			}
+			return param;
+		});
 }
 
+function readConfig(dirName) {
+	var configPath = path.resolve(dirName, configFile);
+
+	return $q.promisify(fs.stat)(configPath)
+		.then(function(stats) {
+			if (! stats.isFile()) {
+				return $q.reject('BAM configuration ' + configFile + ' not found');
+			}
+			return require(configPath);
+		});
+}
+
+function clone(repoName) {
+	var gitCmd  = 'git clone git@github.com:bamlab/' + repoName + '.git ' + repoName ; 
+
+	console.log('Cloning the repository ...'.cyan);
+	return exec(gitCmd).then(function(){
+		console.log('done.'.cyan);
+		return repoName;
+	});
+}
+
+
 parseOptions()
-	.then(clone)
+//	.then(checkDirEmpty)
+//	.then(clone)
+	.then(readConfig)
 	.catch(function (err) {
-		console.error(err);
-		console.error('Abording.');
+		console.error(err.red);
+		console.error('Abording.'.red);
 		process.exit(1);
 	})
 ;
