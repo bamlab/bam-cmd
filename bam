@@ -7,5 +7,6 @@ program
 	.command('install [repoName]', 'Install a BAM repository')
 	.command('deploy [env]', 'Deploy project on servers or the store')
 	.command('build', 'Build a project or an app')
+	.command('init', 'Create an empty bam.js')
   	.parse(process.argv);
 
