@@ -2,11 +2,13 @@
 
 var options = require('commander');
 var inquirer = require('inquirer');
-var q = require('bluebird');
+var $q = require('bluebird');
+var fs = require('fs');
+var exec = require('child_process').exec;
 
 function parseOptions() {
 	var repoName = null;
-	var repoNameDefer = q.defer();
+	var repoNameDefer = $q.defer();
 
 	options
 		.arguments('[repoName]')
@@ -30,7 +32,26 @@ function parseOptions() {
 }
 
 function clone(repoName) {
-	console.log(repoName);
+	if (fs.readdirSync('.').length !== 0) {
+		return $q.reject('Directory not empty');
+	}
+	
+	exec('git clone git@github.com:bamlab/' + repoName + '.git', function(err, stdout, stderr){
+		console.log('err');
+		console.log(err);
+		console.log('stdout');
+		console.log(stdout);
+		console.log('stderr');
+		console.log(stderr);
+	});
+	
 }
 
-parseOptions().then(clone);
+parseOptions()
+	.then(clone)
+	.catch(function (err) {
+		console.error(err);
+		console.error('Abording.');
+		process.exit(1);
+	})
+;
