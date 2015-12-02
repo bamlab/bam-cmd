@@ -1,6 +1,17 @@
 #!/usr/bin/env node
 
-var program = require('commander');
-var inquirer = require('inquirer');
+var fs = require('fs');
+var path = require('path')
+var colors = require('colors');
+var $q = require('bluebird');
 
-console.log('init script');
+var templateInitPath = path.join(__dirname, 'template', 'bam.js');
+var stat = $q.promisify(fs.stat);
+
+stat('bam.js').then(function() {
+	console.log('Your project already have a bam.js file'.red);	
+	process.exit(1);
+}, function() {
+	fs.createReadStream(templateInitPath)
+		.pipe(fs.createWriteStream('bam.js'));
+});

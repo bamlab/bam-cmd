@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+require('colors');
+
+
+var configManager = new require('./lib/config.manager')();
+configManager.load()
+	.then(function() {
+		return configManager.runInstall({});
+	})
+	.catch(function (err) {
+		console.error((err + '').red);
+		console.error('Abording.'.red);
+		process.exit(1);
+	})
+;

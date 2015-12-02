@@ -8,5 +8,6 @@ program
 	.command('deploy [env]', 'Deploy project on servers or the store')
 	.command('build', 'Build a project or an app')
 	.command('init', 'Create an empty bam.js')
+	.command('run-install', 'Run the install script of the project')
   	.parse(process.argv);
 

@@ -8,6 +8,7 @@ var colors = require('colors');
 var childProcess = require('child_process');
 var path = require('path');
 
+var configManager = require('./lib/config.manager');
 
 var configFile = 'bam.js';
 
@@ -59,35 +60,76 @@ function checkDirEmpty(param) {
 		});
 }
 
-function readConfig(dirName) {
-	var configPath = path.resolve(dirName, configFile);
-
-	return $q.promisify(fs.stat)(configPath)
-		.then(function(stats) {
-			if (! stats.isFile()) {
-				return $q.reject('BAM configuration ' + configFile + ' not found');
-			}
-			return require(configPath);
-		});
-}
-
 function clone(repoName) {
 	var gitCmd  = 'git clone git@github.com:bamlab/' + repoName + '.git ' + repoName ; 
 
-	console.log('Cloning the repository ...'.cyan);
+	console.log(('Cloning the repository ' + repoName + ' ...').cyan);
 	return exec(gitCmd).then(function(){
 		console.log('done.'.cyan);
 		return repoName;
 	});
 }
 
+function readConfig(dirName) {
+	var configPath = path.resolve(dirName, configFile);
+	return [
+		dirName, 
+		configManager(configPath).load()
+	];
+}
+
+function moveDir(dirName, config) {
+	var finalDir = config.getDirName();
+	
+	if (! finalDir) {
+		return;
+	}
+
+	fs.renameSync(dirName, finalDir);
+	return config;
+}
+
+function fetchLinkedRepos(config) {
+	var repos = config.getLinkedRepos();
+	var promises = [];
+	repos.forEach(function(name) {
+		var promise = clone(name)
+			.then(readConfig)
+			.spread(moveDir)
+			.then(runInstall)
+			.catch(function (err) {
+				console.error(('Error installing ' + name).red);
+				console.error((err + '').red);
+			});
+		promises.push(promise);
+	});	
+	return promises;
+}
+
+function runInstall(config) {
+	process.chdir(config.getDirName());
+	var promise = exec('bam run-install')
+		.then(function(stdout) {
+			console.log(stdout);
+		});
+	process.chdir('..');
+	return promise;
+}
 
 parseOptions()
-//	.then(checkDirEmpty)
-//	.then(clone)
+	.then(checkDirEmpty)
+	.then(clone)
 	.then(readConfig)
+	.spread(moveDir)
+	.then(function(config) {
+		return $q.all(fetchLinkedRepos(config))
+			.then(function() {
+				return runInstall(config)
+			});
+	})
+
 	.catch(function (err) {
-		console.error(err.red);
+		console.error((err + '').red);
 		console.error('Abording.'.red);
 		process.exit(1);
 	})
