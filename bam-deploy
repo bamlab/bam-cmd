@@ -2,5 +2,37 @@
 
 var program = require('commander');
 var inquirer = require('inquirer');
+var $q = require('bluebird');
 
-console.log('deploy script');
+require('colors');
+var configManager = new require('./lib/config.manager')();
+
+configManager.load()
+	.then(function() {
+		program
+		  .version('0.1.0')
+		  .option('-e, --env <env>', 'Environment [staging]', /^(prod|staging)$/i, 'staging')
+		  .option('-n, --no-build', 'Don\'t make the build')
+		;
+		return configManager.buildOptions(program);	
+	})
+	.then(function() {
+		program.parse(process.argv);
+		console.log(program);		
+		if (! program.build) {
+			return $q.resolve();
+		}
+
+		return configManager.runBuild(program);	
+	})
+	.then(function() {
+		return configManager.runDeploy(program);	
+	})
+	.catch(function (err) {
+		console.error((err + '').red);
+		console.error('Abording.'.red);
+		process.exit(1);
+	})
+;
+
+
