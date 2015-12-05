@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "bam": "bam"
+    "bam": "bin/bam"
   },
   "author": "Nicolas Djambazian <nicolasd@bamlab.fr>",
   "license": "MIT",
