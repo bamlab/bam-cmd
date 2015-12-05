@@ -3,7 +3,7 @@
  * @see https://github.com/bamlab/bam-cmd
  */
 
-var exec = require('child_process').exec;
+var spawn = require('child_process').spawn;
 
 module.exports = {
   scriptVersion: '0.1.0',
@@ -11,9 +11,8 @@ module.exports = {
   linkedRepos: [],
   install: function() {
     // run at the installation. Do not accept any argument
-    exec('npm install', function(err, stdin, stderr) {
-      console.log(stdin);
-    });
+    spawn('npm', ['install'], {stdio: 'inherit'});
+    spawn('bower', ['install'], {stdio: 'inherit'});
   },
   buildOptions: function(commander) {
     commander
