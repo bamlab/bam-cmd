@@ -14,123 +14,123 @@ var configFile = 'bam.js';
 
 
 var exec = function (cmd) {
-	var resDefer = $q.defer();
-	childProcess.exec(cmd, function (err, stdin, stderr) {
-		if (err === null) {
-			resDefer.resolve(stdin);
-		} else {
-			resDefer.reject(stderr);
-		}
-	});
-	return resDefer.promise;
+  var resDefer = $q.defer();
+  childProcess.exec(cmd, function (err, stdin, stderr) {
+    if (err === null) {
+      resDefer.resolve(stdin);
+    } else {
+      resDefer.reject(stderr);
+    }
+  });
+  return resDefer.promise;
 }
 
 function parseOptions() {
-	var repoName = null;
-	var repoNameDefer = $q.defer();
+  var repoName = null;
+  var repoNameDefer = $q.defer();
 
-	options
-		.arguments('[repoName]')
-		.action(function(name) {
-			repoName = name;
-		})
-		.parse(process.argv);
+  options
+    .arguments('[repoName]')
+    .action(function(name) {
+      repoName = name;
+    })
+    .parse(process.argv);
 
-	if (repoName !== null) {
-		repoNameDefer.resolve(repoName);
+  if (repoName !== null) {
+    repoNameDefer.resolve(repoName);
 
-	} else { // Ask for a repo
-		inquirer.prompt({
-			name: 'repoName',
-			message: 'Which project do you want to install?'
-		}, function (answer) {
-			repoNameDefer.resolve(answer.repoName);
-		});
-	}
-	return repoNameDefer.promise;
+  } else { // Ask for a repo
+    inquirer.prompt({
+      name: 'repoName',
+      message: 'Which project do you want to install?'
+    }, function (answer) {
+      repoNameDefer.resolve(answer.repoName);
+    });
+  }
+  return repoNameDefer.promise;
 }
 
 function checkDirEmpty(param) {
-	return $q.promisify(fs.readdir)('.')
-		.then(function(list) {
-			if (list.length !== 0) {
-				return $q.reject('Directory not empty');
-			}
-			return param;
-		});
+  return $q.promisify(fs.readdir)('.')
+    .then(function(list) {
+      if (list.length !== 0) {
+        return $q.reject('Directory not empty');
+      }
+      return param;
+    });
 }
 
 function clone(repoName) {
-	var gitCmd  = 'git clone git@github.com:bamlab/' + repoName + '.git ' + repoName ; 
+  var gitCmd  = 'git clone git@github.com:bamlab/' + repoName + '.git ' + repoName ;
 
-	console.log(('Cloning the repository ' + repoName + ' ...').cyan);
-	return exec(gitCmd).then(function(){
-		console.log('done.'.cyan);
-		return repoName;
-	});
+  console.log(('Cloning the repository ' + repoName + ' ...').cyan);
+  return exec(gitCmd).then(function(){
+    console.log('done.'.cyan);
+    return repoName;
+  });
 }
 
 function readConfig(dirName) {
-	var configPath = path.resolve(dirName, configFile);
-	return [
-		dirName, 
-		configManager(configPath).load()
-	];
+  var configPath = path.resolve(dirName, configFile);
+  return [
+    dirName,
+    configManager(configPath).load()
+  ];
 }
 
 function moveDir(dirName, config) {
-	var finalDir = config.getDirName();
-	
-	if (! finalDir) {
-		return;
-	}
+  var finalDir = config.getDirName();
 
-	fs.renameSync(dirName, finalDir);
-	return config;
+  if (! finalDir) {
+    return;
+  }
+
+  fs.renameSync(dirName, finalDir);
+  return config;
 }
 
 function fetchLinkedRepos(config) {
-	var repos = config.getLinkedRepos();
-	var promises = [];
-	repos.forEach(function(name) {
-		var promise = clone(name)
-			.then(readConfig)
-			.spread(moveDir)
-			.then(runInstall)
-			.catch(function (err) {
-				console.error(('Error installing ' + name).red);
-				console.error((err + '').red);
-			});
-		promises.push(promise);
-	});	
-	return promises;
+  var repos = config.getLinkedRepos();
+  var promises = [];
+  repos.forEach(function(name) {
+    var promise = clone(name)
+      .then(readConfig)
+      .spread(moveDir)
+      .then(runInstall)
+      .catch(function (err) {
+        console.error(('Error installing ' + name).red);
+        console.error((err + '').red);
+      });
+    promises.push(promise);
+  });
+  return promises;
 }
 
 function runInstall(config) {
-	process.chdir(config.getDirName());
-	var promise = exec('bam run-install')
-		.then(function(stdout) {
-			console.log(stdout);
-		});
-	process.chdir('..');
-	return promise;
+  process.chdir(config.getDirName());
+  var promise = exec('bam run-install')
+    .then(function(stdout) {
+      console.log(stdout);
+    });
+  process.chdir('..');
+  return promise;
 }
 
 parseOptions()
-	.then(checkDirEmpty)
-	.then(clone)
-	.then(readConfig)
-	.spread(moveDir)
-	.then(function(config) {
-		return $q.all(fetchLinkedRepos(config))
-			.then(function() {
-				return runInstall(config)
-			});
-	})
+  .then(checkDirEmpty)
+  .then(clone)
+  .then(readConfig)
+  .spread(moveDir)
+  .then(function(config) {
+    return $q.all(fetchLinkedRepos(config))
+      .then(function() {
+        return runInstall(config)
+      });
+  })
 
-	.catch(function (err) {
-		console.error((err + '').red);
-		console.error('Abording.'.red);
-		process.exit(1);
-	})
+  .catch(function (err) {
+    console.error((err + '').red);
+    console.error('Abording.'.red);
+    process.exit(1);
+  })
 ;

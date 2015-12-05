@@ -6,25 +6,25 @@
 var exec = require('child_process').exec;
 
 module.exports = {
-	scriptVersion: '0.1.0',
-	dirName: 'repository-dir-name',
-	linkedRepos: [],
-	install: function() {
-		// run at the installation. Do not accept any argument
-		exec('npm install', function(err, stdin, stderr) {
-			console.log(stdin);	
-		});
-	},
-	buildOptions: function(commander) {
-		commander
-			.option('-d --doge', 'Doge');
-	},
-	build: function(options) {
-		console.log(options.env);
-		console.log(options.doge);
-	},
-	deploy: function(options) {
-		console.log(options.env);
-		console.log(options.doge);
-	} 
+  scriptVersion: '0.1.0',
+  dirName: 'repository-dir-name',
+  linkedRepos: [],
+  install: function() {
+    // run at the installation. Do not accept any argument
+    exec('npm install', function(err, stdin, stderr) {
+      console.log(stdin);
+    });
+  },
+  buildOptions: function(commander) {
+    commander
+      .option('-d --doge', 'Doge');
+  },
+  build: function(options) {
+    console.log(options.env);
+    console.log(options.doge);
+  },
+  deploy: function(options) {
+    console.log(options.env);
+    console.log(options.doge);
+  }
 };
