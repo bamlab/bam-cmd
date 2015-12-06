@@ -45,21 +45,6 @@ function checkDirEmpty(param) {
     });
 }
 
-function clone(repoName) {
-  var args  = [
-    'clone',
-    '--progress',
-    '--recursive',
-    'git@github.com:bamlab/' + repoName + '.git',
-    repoName
-  ] ;
-
-  console.log(('Cloning the repository ' + repoName + ' ...').cyan);
-  return bamCmd.run('git', args).then(function(){
-    console.log(('done ' + repoName).cyan);
-    return repoName;
-  });
-}
 
 function readConfig(dirName) {
   var configPath = path.resolve(dirName, configFile);
@@ -84,7 +69,7 @@ function fetchLinkedRepos(config) {
   var repos = config.getLinkedRepos();
   var promises = [];
   repos.forEach(function(name) {
-    var promise = clone(name)
+    var promise = bamCmd.cloneRepository(name)
       .then(readConfig)
       .spread(moveDir)
       .then(runInstall)
@@ -106,7 +91,9 @@ function runInstall(config) {
 
 parseOptions()
   .then(checkDirEmpty)
-  .then(clone)
+  .then(function(repo) {
+    return bamCmd.cloneRepository(repo);
+  })
   .then(readConfig)
   .spread(moveDir)
   .then(function(config) {
