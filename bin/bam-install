@@ -4,26 +4,11 @@ var options = require('commander');
 var inquirer = require('inquirer');
 var $q = require('bluebird');
 var fs = require('fs');
-var colors = require('colors');
-var childProcess = require('child_process');
+require('colors');
 var path = require('path');
-
-var configManager = require('./lib/config.manager');
+var bamCmd = require('..');
 
 var configFile = 'bam.js';
-
-
-var exec = function (cmd) {
-  var resDefer = $q.defer();
-  childProcess.exec(cmd, function (err, stdin, stderr) {
-    if (err === null) {
-      resDefer.resolve(stdin);
-    } else {
-      resDefer.reject(stderr);
-    }
-  });
-  return resDefer.promise;
-}
 
 function parseOptions() {
   var repoName = null;
@@ -61,11 +46,17 @@ function checkDirEmpty(param) {
 }
 
 function clone(repoName) {
-  var gitCmd  = 'git clone git@github.com:bamlab/' + repoName + '.git ' + repoName ;
+  var args  = [
+    'clone',
+    '--progress',
+    '--recursive',
+    'git@github.com:bamlab/' + repoName + '.git',
+    repoName
+  ] ;
 
   console.log(('Cloning the repository ' + repoName + ' ...').cyan);
-  return exec(gitCmd).then(function(){
-    console.log('done.'.cyan);
+  return bamCmd.run('git', args).then(function(){
+    console.log(('done ' + repoName).cyan);
     return repoName;
   });
 }
@@ -74,7 +65,7 @@ function readConfig(dirName) {
   var configPath = path.resolve(dirName, configFile);
   return [
     dirName,
-    configManager(configPath).load()
+    bamCmd.loadConfig(configPath)
   ];
 }
 
@@ -107,13 +98,10 @@ function fetchLinkedRepos(config) {
 }
 
 function runInstall(config) {
-  process.chdir(config.getDirName());
-  var promise = exec('bam run-install')
-    .then(function(stdout) {
-      console.log(stdout);
-    });
-  process.chdir('..');
-  return promise;
+  return bamCmd.spawn('bam', ['run-install'], {
+    cwd: config.getDirName(),
+    stdio: 'inherit',
+  });
 }
 
 parseOptions()
