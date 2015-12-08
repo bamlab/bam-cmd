@@ -5,38 +5,42 @@ var inquirer = require('inquirer');
 var $q = require('bluebird');
 var fs = require('fs');
 require('colors');
-var path = require('path');
 var bamCmd = require('..');
 
-var configFile = 'bam.js';
 
 function parseOptions() {
-  var repoName = null;
+  var params = {
+    dir: '.'
+  };
   var repoNameDefer = $q.defer();
 
   options
-    .arguments('[repoName]')
-    .action(function(name) {
-      repoName = name;
+    .arguments('[repoName] [dir]')
+    .action(function(name, dir) {
+      params.repoName = name;
+      if (dir) {
+        params.dir = dir;
+      }
     })
     .parse(process.argv);
 
-  if (repoName !== null) {
-    repoNameDefer.resolve(repoName);
+  if (params.repoName !== null) {
+    repoNameDefer.resolve(params);
 
   } else { // Ask for a repo
     inquirer.prompt({
       name: 'repoName',
       message: 'Which project do you want to install?'
     }, function (answer) {
-      repoNameDefer.resolve(answer.repoName);
+      params.repoName = answer.repoName;
+      repoNameDefer.resolve(params);
     });
   }
   return repoNameDefer.promise;
 }
 
 function checkDirEmpty(param) {
-  return $q.promisify(fs.readdir)('.')
+  return $q.promisify(fs.readdir)(param.dir)
     .then(function(list) {
       if (list.length !== 0) {
         return $q.reject('Directory not empty');
@@ -45,67 +49,8 @@ function checkDirEmpty(param) {
     });
 }
 
-
-function readConfig(dirName) {
-  var configPath = path.resolve(dirName, configFile);
-  return [
-    dirName,
-    bamCmd.loadConfig(configPath)
-  ];
-}
-
-function moveDir(dirName, config) {
-  var finalDir = config.getDirName();
-
-  if (! finalDir) {
-    return;
-  }
-
-  fs.renameSync(dirName, finalDir);
-  return config;
-}
-
-function fetchLinkedRepos(config) {
-  var repos = config.getLinkedRepos();
-  var promises = [];
-  repos.forEach(function(name) {
-    var promise = bamCmd.cloneRepository(name)
-      .then(readConfig)
-      .spread(moveDir)
-      .then(runInstall)
-      .catch(function (err) {
-        console.error(('Error installing ' + name).red);
-        console.error((err + '').red);
-      });
-    promises.push(promise);
-  });
-  return promises;
-}
-
-function runInstall(config) {
-  return bamCmd.spawn('bam', ['run-install'], {
-    cwd: config.getDirName(),
-    stdio: 'inherit',
-  });
-}
-
 parseOptions()
   .then(checkDirEmpty)
-  .then(function(repo) {
-    return bamCmd.cloneRepository(repo);
-  })
-  .then(readConfig)
-  .spread(moveDir)
-  .then(function(config) {
-    return $q.all(fetchLinkedRepos(config))
-      .then(function() {
-        return runInstall(config)
-      });
-  })
-
-  .catch(function (err) {
-    console.error((err + '').red);
-    console.error('Abording.'.red);
-    process.exit(1);
-  })
-;
+  .then(function(param) {
+    return bamCmd.installProject(param.repoName, param.dir, true);
+  });

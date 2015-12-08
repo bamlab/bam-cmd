@@ -3,9 +3,9 @@
 require('colors');
 
 
-var configManager = new require('./lib/config.manager')();
-configManager.load()
-	.then(function() {
+var bamCmd = require('..');
+bamCmd.loadConfig()
+	.then(function(configManager) {
 		return configManager.runInstall({});
 	})
 	.catch(function (err) {
