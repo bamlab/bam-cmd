@@ -4,7 +4,7 @@ var program = require('commander');
 var inquirer = require('inquirer');
 
 require('colors');
-var configManager = new require('./lib/config.manager')();
+var configManager = new require('../lib/config.manager')();
 
 configManager.load()
   .then(function() {
