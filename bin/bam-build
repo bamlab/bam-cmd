@@ -1,28 +1,23 @@
 #!/usr/bin/env node
 
-var program = require('commander');
-var inquirer = require('inquirer');
+var Liftoff = require('liftoff');
+var Bam = new Liftoff({
+  processTitle: 'bam',
+  moduleName: 'bam-cmd',
+  configName: 'bam',
+  extensions: {
+    '.js': null,
+    '.json': null
+  }
+});
 
-require('colors');
-var configManager = new require('../lib/config.manager')();
+Bam.launch({}, function(env) {
+  var bamCmd;
+  if (env.modulePath) {
+    bam.cmd = require(env.modulePath);
+  } else {
+    bamCmd = require('../lib/bam-cmd')
+  }
 
-configManager.load()
-  .then(function() {
-    program
-      .version('0.1.0')
-      .option('-e, --env <env>', 'Environment [staging]', /^(prod|staging)$/i, 'staging')
-    ;
-    return configManager.buildOptions(program);
-  })
-  .then(function() {
-    program.parse(process.argv);
-    return configManager.runBuild(program);
-  })
-  .catch(function (err) {
-    console.error((err + '').red);
-    console.error('Abording.'.red);
-    process.exit(1);
-  })
-;
-
-
+  bamCmd.createCommand(env, process.argv).build();
+});
