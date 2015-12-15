@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "The bam command tool",
   "main": "lib/bam-cmd.js",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/bamlab/bam-cmd.git"
+  },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha test"
   },
