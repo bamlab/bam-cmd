@@ -1,6 +1,6 @@
 {
   "name": "bam",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "The bam command tool",
   "main": "lib/bam-cmd.js",
   "scripts": {

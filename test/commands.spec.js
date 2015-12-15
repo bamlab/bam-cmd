@@ -10,7 +10,7 @@ describe('commands', function() {
 
   it('should get the package version', function() {
     var command = new Command();
-    expect(command.getVersion()).to.be.equals('1.0.0');
+    expect(command.getVersion()).to.be.equals('0.1.0');
   });
 
   it('should loas the config file', function(done) {

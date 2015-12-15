@@ -6,7 +6,6 @@
 var spawn = require('child_process').spawn;
 
 module.exports = {
-  scriptVersion: '0.1.0',
   dirName: 'repository-dir-name',
   linkedRepos: [],
   install: function() {
