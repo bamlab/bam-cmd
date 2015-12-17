@@ -1,15 +1,15 @@
 module.exports = function () {
   return {
     files: [
-      'lib/**/*.js'
+      'lib/**/*.js',
     ],
 
     tests: [
-      'test/**/*.spec.js'
+      'test/**/*.spec.js',
     ],
 
     env: {
-      type: 'node'
-    }
+      type: 'node',
+    },
   };
 };
