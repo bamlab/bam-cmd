@@ -10,7 +10,6 @@ module.exports = {
   linkedRepos: [],
   install: function() {
     // run at the installation. Do not accept any argument
-    spawn('npm', ['install'], {stdio: 'inherit'});
     spawn('bower', ['install'], {stdio: 'inherit'});
   },
   buildOptions: function(commander) {

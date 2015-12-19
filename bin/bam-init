@@ -5,7 +5,7 @@ var path = require('path')
 var colors = require('colors');
 var $q = require('bluebird');
 
-var templateInitPath = path.join(__dirname, 'template', 'bam.js');
+var templateInitPath = path.join(__dirname, '..', 'template', 'bam.js');
 var stat = $q.promisify(fs.stat);
 
 stat('bam.js').then(function() {
