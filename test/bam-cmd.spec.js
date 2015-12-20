@@ -4,6 +4,8 @@ var expect = chai.expect;
 
 var path = require('path');
 var childProcess = require('child_process');
+var Promise = require('bluebird');
+var fs = require('fs');
 
 var bamCmd = require('..');
 
@@ -117,5 +119,145 @@ describe('bam-cmd main module', function() {
     childProcess.spawn.restore();
   });
 
+  it('should run a command', function() {
+    sinon.stub(bamCmd, 'spawn');
+
+    var returns = {then: function() {}};
+    var cmd = 'ls';
+    var args = ['args'];
+
+    bamCmd.spawn.returns(returns);
+
+    expect(bamCmd.run(cmd, args)).to.be.equals(returns);
+    expect(bamCmd.spawn.called).to.be.true;
+
+    var spawnCallArgs = bamCmd.spawn.getCall(0).args;
+    expect(spawnCallArgs[0]).to.be.equals(cmd);
+    expect(spawnCallArgs[1]).to.be.equals(args);
+
+    bamCmd.spawn.restore();
+  });
+
+
+  // Cloning
+  it ('should clone the repository', function() {
+    sinon.stub(bamCmd, 'run');
+
+    bamCmd.run.returns(Promise.resolve());
+    repo = repos[0];
+
+    var promise = bamCmd.cloneRepository(repo.givenParam, 'dir', 'parent');
+
+    var runCallArgs = bamCmd.run.getCall(0).args;
+    expect(runCallArgs[0]).to.be.equals('git');
+    expect(runCallArgs[1]).to.have.members([
+      'clone', '--recursive', repo.repoFullName, path.resolve('parent', 'dir')
+    ]);
+
+    bamCmd.run.restore();
+  });
+
+  it ('should clone the repository in the current dir', function() {
+    sinon.stub(bamCmd, 'run');
+
+    bamCmd.run.returns(Promise.resolve());
+    repo = repos[0];
+
+    var promise = bamCmd.cloneRepository(repo.givenParam);
+
+    var runCallArgs = bamCmd.run.getCall(0).args;
+    expect(runCallArgs[0]).to.be.equals('git');
+    expect(runCallArgs[1]).to.have.members([
+      'clone', '--recursive', repo.repoFullName, path.resolve('.', repo.repoName)
+    ]);
+
+    bamCmd.run.restore();
+  });
+
+
+  // rename directory
+  it('should rename a project directory', function() {
+    sinon.stub(fs, 'renameSync');
+
+    var expectedFinalDir = "finalDir"
+    var option = {getDirName: function() {
+      return expectedFinalDir;
+    }};
+
+    return bamCmd.renameProjectDir('currentDir', option)
+      .then(function(finalDir) {
+
+        expect(finalDir).to.be.equals(path.resolve(expectedFinalDir));
+
+        var renameArgs = fs.renameSync.getCall(0).args;
+        expect(renameArgs[0]).to.be.equals('currentDir');
+        expect(renameArgs[1]).to.be.equals(finalDir);
+
+        fs.renameSync.restore();
+      });
+  });
+
+  it('should rename a project directory with default param', function() {
+    sinon.stub(fs, 'renameSync');
+    sinon.stub(bamCmd, 'loadFromDir');
+
+    var expectedFinalDir = "finalDir"
+    var option = {getDirName: function() {
+      return expectedFinalDir;
+    }};
+
+    bamCmd.loadFromDir.returns(Promise.resolve(option));
+
+    return bamCmd.renameProjectDir()
+      .then(function(finalDir) {
+
+        expect(finalDir).to.be.equals(path.resolve('..', finalDir));
+
+        var renameArgs = fs.renameSync.getCall(0).args;
+        expect(renameArgs[0]).to.be.equals('.');
+        expect(renameArgs[1]).to.be.equals(finalDir);
+
+        bamCmd.loadFromDir.restore();
+        fs.renameSync.restore();
+      });
+  });
+
+  it('should handle absolute path when rename a project directory', function() {
+    sinon.stub(fs, 'renameSync');
+
+    var expectedFinalDir = "finalDir"
+    var option = {getDirName: function() {
+      return expectedFinalDir;
+    }};
+
+    return bamCmd.renameProjectDir('/path/to/currentDir', option)
+      .then(function(finalDir) {
+
+        expect(finalDir).to.be.equals('/path/to/finalDir');
+
+        var renameArgs = fs.renameSync.getCall(0).args;
+        expect(renameArgs[0]).to.be.equals('/path/to/currentDir');
+        expect(renameArgs[1]).to.be.equals(finalDir);
+
+        fs.renameSync.restore();
+      });
+  });
+
+  it('should don\'t rename if no dest dir given', function() {
+    sinon.stub(fs, 'renameSync');
+
+    var option = {getDirName: function() {
+      return '';
+    }};
+
+    return bamCmd.renameProjectDir('currentDir', option)
+      .then(function(finalDir) {
+
+        expect(finalDir).to.be.equals(path.resolve('currentDir'));
+        expect(fs.renameSync.called).to.be.false;
+
+        fs.renameSync.restore();
+      });
+  });
 
 });
