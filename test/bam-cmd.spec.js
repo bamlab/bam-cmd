@@ -260,4 +260,45 @@ describe('bam-cmd main module', function() {
       });
   });
 
+
+  // linked repositories
+  it('should install le linked repositories', function() {
+    sinon.stub(bamCmd, 'installProject');
+
+    var repos = ['repo1', 'rep2', 'r3'];
+    var config = {getLinkedRepos: function() {
+      return repos;
+    }};
+
+    bamCmd.installProject.returns(Promise.resolve());
+    var promise = bamCmd.fetchLinkedRepos(config, 'baseDir');
+
+    expect(bamCmd.installProject.callCount).to.be.equals(3);
+
+    var i;
+    for (i = 0; i < 3; i++) {
+      var args = bamCmd.installProject.getCall(i).args;
+      expect(args[0]).to.be.equals(repos[i]);
+      expect(args[1]).to.be.equals('baseDir');
+      expect(args[2]).to.be.equals(true);
+      expect(args[3]).to.be.equals(true);
+    }
+
+    expect(promise.then).to.exist;
+    bamCmd.installProject.restore();
+  });
+
+
+  it('should not stop installing linked repositories on errors', function() {
+    sinon.stub(bamCmd, 'installProject');
+
+    var repos = ['repo1', 'rep2', 'r3'];
+    var config = {getLinkedRepos: function() {return repos;}};
+
+    bamCmd.installProject.returns(Promise.reject());
+    return bamCmd.fetchLinkedRepos(config, 'baseDir').then(function() {
+      bamCmd.installProject.restore();
+    });
+  });
+
 });
