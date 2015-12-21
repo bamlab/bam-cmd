@@ -38,5 +38,10 @@ module.exports = [
     givenParam: 'commander.js',
     repoFullName: 'git@github.com:orga/commander.js.git',
     repoName: 'commander.js'
-  }
+  },
+  {
+    givenParam: 'repoWithMaj',
+    repoFullName: 'git@github.com:orga/repoWithMaj.git',
+    repoName: 'repoWithMaj'
+  },
 ];

@@ -37,6 +37,14 @@ describe('bam-cmd main module', function() {
     });
   });
 
+  it('should throw Error on invalid name', function() {
+    var fn = function() {
+      bamCmd.getRepositoryName('01123');
+    };
+
+    expect(fn).to.throw(Error);
+  });
+
   // Create new command
   it('should create a new Command object', function() {
     var Command = require('../lib/commands.js');
