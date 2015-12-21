@@ -301,4 +301,17 @@ describe('bam-cmd main module', function() {
     });
   });
 
+  // run install script
+  it('should launch the bam-run-install script', function() {
+    sinon.stub(childProcess, 'fork');
+
+    bamCmd.runInstallScript('directory');
+    expect(childProcess.fork.called).to.be.true;
+
+    expect(childProcess.fork.getCall(0).args[0]).to.match(/bam-run-install$/);
+    expect(childProcess.fork.getCall(0).args[1].cwd).to.be.equals('directory');
+    childProcess.fork.restore();
+  });
+
+
 });
