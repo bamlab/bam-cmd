@@ -321,5 +321,136 @@ describe('bam-cmd main module', function() {
     childProcess.fork.restore();
   });
 
+  // npm install
+  it('should run npm install', function() {
+    sinon.stub(fs, 'statSync');
+    sinon.stub(bamCmd, 'spawn');
+
+    spawnReturn = {then: function(){}};
+    bamCmd.spawn.returns(spawnReturn);
+
+    var promise = bamCmd.installNodeDependencies('directory');
+
+    expect(promise).to.be.equals(spawnReturn);
+
+    var spawnArgs = bamCmd.spawn.getCall(0).args;
+    expect(spawnArgs[0]).to.be.equals('npm');
+    expect(spawnArgs[1][0]).to.be.equals('install');
+    expect(spawnArgs[2].cwd).to.be.equals('directory');
+
+    fs.statSync.restore();
+    bamCmd.spawn.restore();
+  });
+
+  it('should ignore project with no package.json', function() {
+    sinon.stub(fs, 'statSync');
+    sinon.stub(bamCmd, 'spawn');
+
+    var success = sinon.spy();
+    var failure = sinon.spy();
+    fs.statSync.throws();
+
+    return bamCmd.installNodeDependencies('directory')
+      .then(success, failure)
+      .then(function() {
+
+        expect(success.called).to.be.true;
+        expect(failure.called).to.be.false;
+
+        expect(bamCmd.spawn.called).to.be.false;
+
+        fs.statSync.restore();
+        bamCmd.spawn.restore();
+      });
+
+  });
+
+  // project installation
+  it('should do all the 6 documentated steps', function() {
+    sinon.stub(bamCmd, 'cloneRepository');
+    sinon.stub(bamCmd, 'installNodeDependencies');
+    sinon.stub(bamCmd, 'loadFromDir');
+    sinon.stub(bamCmd, 'renameProjectDir');
+    sinon.stub(bamCmd, 'fetchLinkedRepos');
+    sinon.stub(bamCmd, 'runInstallScript');
+
+    bamCmd.cloneRepository.returns(Promise.resolve('dest'));
+    bamCmd.installNodeDependencies.returns(Promise.resolve());
+    bamCmd.loadFromDir.returns(Promise.resolve());
+    bamCmd.renameProjectDir.returns(Promise.resolve());
+    bamCmd.fetchLinkedRepos.returns(Promise.resolve());
+    bamCmd.runInstallScript.returns(Promise.resolve());
+
+    return bamCmd.installProject().then(function() {
+
+      expect(bamCmd.cloneRepository.called).to.be.true;
+      expect(bamCmd.installNodeDependencies.called).to.be.true;
+      expect(bamCmd.loadFromDir.called).to.be.true;
+      expect(bamCmd.renameProjectDir.called).to.be.true;
+      expect(bamCmd.fetchLinkedRepos.called).to.be.true;
+      expect(bamCmd.runInstallScript.called).to.be.true;
+
+
+      bamCmd.cloneRepository.restore();
+      bamCmd.installNodeDependencies.restore();
+      bamCmd.loadFromDir.restore();
+      bamCmd.renameProjectDir.restore();
+      bamCmd.fetchLinkedRepos.restore();
+      bamCmd.runInstallScript.restore();
+    });
+  });
+
+  it('should don\'t send errors if no bam.js', function() {
+    sinon.stub(bamCmd, 'cloneRepository');
+    sinon.stub(bamCmd, 'installNodeDependencies');
+    sinon.stub(bamCmd, 'loadFromDir');
+
+    bamCmd.cloneRepository.returns(Promise.resolve('dest'));
+    bamCmd.installNodeDependencies.returns(Promise.resolve());
+    bamCmd.loadFromDir.returns(Promise.reject());
+
+    var success = sinon.spy();
+    var failure = sinon.spy();
+
+    return bamCmd.installProject('name', 'dest')
+      .then(success, failure)
+      .then(function() {
+
+        expect(success.called).to.be.true;
+        expect(failure.called).to.be.false;
+
+        bamCmd.cloneRepository.restore();
+        bamCmd.installNodeDependencies.restore();
+        bamCmd.loadFromDir.restore();
+      });
+  });
+
+  it('should send errors if no bam.js and it is required', function() {
+    sinon.stub(bamCmd, 'cloneRepository');
+    sinon.stub(bamCmd, 'installNodeDependencies');
+    sinon.stub(bamCmd, 'loadFromDir');
+
+    bamCmd.cloneRepository.returns(Promise.resolve('dest'));
+    bamCmd.installNodeDependencies.returns(Promise.resolve());
+    bamCmd.loadFromDir.returns(Promise.reject());
+
+    var success = sinon.spy();
+    var failure = sinon.spy();
+
+    return bamCmd.installProject('name', 'dest', true)
+      .then(success, failure)
+      .then(function() {
+
+        expect(success.called).to.be.false;
+        expect(failure.called).to.be.true;
+
+        bamCmd.cloneRepository.restore();
+        bamCmd.installNodeDependencies.restore();
+        bamCmd.loadFromDir.restore();
+      });
+  });
+
+
+
 
 });
