@@ -100,6 +100,49 @@ The step 2 allows you to require some locally installed script at the beginning 
 
 If you have more one repository for your entire project (like a back, a front and a provisioning) you can use the `linkedRepos` configuration. It is simply an array of repository names.
 
+## Configuration Reference
+
+### Bam.js
+
+The configuration must be in a file named `bam.js` in your project directory. It must export an object which could have the following attribute :
+
+#### build
+type: `function(config)`
+
+params:
++ config : [Commander](https://github.com/tj/commander.js) object with the parsed command arguments
+
+The script to run for building the project.
+
+#### deploy
+type: `function(config)`
+
+params:
++ config : [Commander](https://github.com/tj/commander.js) object with the parsed command arguments
+
+The script to run for deploying the project.
+
+#### install
+type: `function()`
+
+The script to run for installing the project. When the function is called, the `npm install` command has already been rrun if needed.
+
+
+#### dirName
+type: `String`
+
+The name of the project directory. If undefined or blank, the porjct dir will not been renamed.
+
+### linkedRepos
+type: `Array` of `string`
+
+List of linked repository to install in the same parent folder of the project. Usefull when the back, the front and the provisionning are in different repositories. The names must have the same form than in the `bam install` command.
+
+At the project installation, the will do the same actions than the `bam install` command on each project. The only two differences are :
+
+1. If no `bam.js` file is fould, no error is throwed.
+2. The linked repositories are not recursively installed
+
 
 ## Running the test
 
