@@ -1,7 +1,7 @@
 
 module.exports = {
   scriptVersion: '0.0.23456789',
-  dirName: 'repository-dir-name',
+  dirName: 'default-fixture-config',
   linkedRepos: [],
   install: function() {
   },

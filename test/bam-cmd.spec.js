@@ -209,7 +209,7 @@ describe('bam-cmd main module', function() {
     sinon.stub(fs, 'renameSync');
     sinon.stub(bamCmd, 'loadFromDir');
 
-    var expectedFinalDir = "finalDir"
+    var expectedFinalDir = "finalDir";
     var option = {getDirName: function() {
       return expectedFinalDir;
     }};
