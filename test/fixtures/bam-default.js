@@ -1,5 +1,4 @@
-
-module.exports = {
+var config = {
   scriptVersion: '0.0.23456789',
   dirName: 'default-fixture-config',
   linkedRepos: [],
@@ -12,3 +11,5 @@ module.exports = {
   deploy: function(options) {
   }
 };
+
+module.exports =  config;

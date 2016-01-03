@@ -7,7 +7,7 @@ var childProcess = require('child_process');
 var Promise = require('bluebird');
 var fs = require('fs');
 
-var bamCmd = require('..');
+var bamCmd = require('../lib/bam-cmd.js');
 
 var repos = require('./fixtures/repositories');
 
