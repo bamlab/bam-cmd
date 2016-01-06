@@ -105,7 +105,7 @@ If you have more one repository for your entire project (like a back, a front an
 ### Commands
 
 ```
-bam install [repoName]  Install a BAM repository
+bam install [repoName]  Install a repository
 bam deploy [env]        Deploy project on servers or the store
 bam build               Build a project or an app
 bam init                Create an empty bam.js
@@ -113,9 +113,15 @@ bam run-install         Run the install script of the project
 bam help [cmd]          display help for [cmd]
 ```
 
+The repository name could be specified in all accepted git format. The command accept the following format : 
+* `orga/package.git` will be used as `git@github.com:orga/package.git` 
+* `package.git` will be used as `git@github.com:bamlab/package.git`
+* `orga/package` will be used as `git@github.com:orga/package.git` 
+* `package` will be used as `git@github.com:bamlab/package.git` 
+
 ### Project Configuration
 
-The configuration must be in a file named `bam.js` in your project directory. It must export an object which could have the following attribute :
+The configuration must be in a file named `bam.js` in your project directory. It must export an object which could have the following attributes :
 
 **build**
 
@@ -139,14 +145,14 @@ The script to run for deploying the project.
 
 type: `function()`
 
-The script to run for installing the project. When the function is called, the `npm install` command has already been rrun if needed.
+The script to run for installing the project. When the function is called, the `npm install` command has already been run if needed.
 
 
 **dirName**
 
 type: `String`
 
-The name of the project directory. If undefined or blank, the porjct dir will not been renamed.
+The name of the project directory. If undefined or blank, the porject dir will not been renamed.
 
 **linkedRepos**
 
