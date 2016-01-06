@@ -14,7 +14,7 @@ var Bam = new Liftoff({
 Bam.launch({}, function(env) {
   var bamCmd;
   if (env.modulePath) {
-    bam.cmd = require(env.modulePath);
+    bamCmd = require(env.modulePath);
   } else {
     bamCmd = require('../lib/bam-cmd')
   }

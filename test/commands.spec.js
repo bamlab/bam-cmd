@@ -164,4 +164,15 @@ describe('commands', function() {
     return command.deploy();
   });
 
+  it('should launch the runInstall command', function() {
+    var config = {
+      install: sinon.spy(),
+    };
+    var command = new Command({}, [], config);
+
+    return command.runInstall().then(function() {
+      expect(config.install.called).to.be.true;
+    });
+  });
+
 });

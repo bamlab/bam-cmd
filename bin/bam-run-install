@@ -2,15 +2,25 @@
 
 require('colors');
 
+var liftoff = require('liftoff');
+var bam = new liftoff({
+  processTitle: 'bam',
+  moduleName: 'bam-cmd',
+  configName: 'bam',
+  extensions: {
+    '.js': null,
+    '.json': null,
 
-var bamCmd = require('..');
-bamCmd.loadConfig()
-	.then(function(configManager) {
-		return configManager.runInstall({});
-	})
-	.catch(function (err) {
-		console.error((err + '').red);
-		console.error('Abording.'.red);
-		process.exit(1);
-	})
-;
+  },
+});
+
+bam.launch({}, function(env) {
+  var bamCmd;
+  if (env.modulePath) {
+    bamCmd = require(env.modulePath);
+  } else {
+    bamCmd = require('../lib/bam-cmd');
+  }
+
+  bamCmd.createCommand(env, process.argv).runInstall();
+});
