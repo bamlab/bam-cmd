@@ -1,0 +1,239 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Bam-cmd by bamlab</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Bam-cmd</h1>
+        <p>Build Automation Manager</p>
+
+        <p class="view"><a href="https://github.com/bamlab/bam-cmd">View the Project on GitHub <small>bamlab/bam-cmd</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/bamlab/bam-cmd/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/bamlab/bam-cmd/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/bamlab/bam-cmd">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="build-automation-manager" class="anchor" href="#build-automation-manager" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build Automation Manager</h1>
+
+<p><img src="https://img.shields.io/circleci/project/bamlab/bam-cmd/master.svg" alt="Build status">
+<img src="https://img.shields.io/github/release/bamlab/bam-cmd.svg" alt="Release">
+<img src="https://img.shields.io/codeclimate/github/bamlab/bam-cmd.svg" alt="Climate">
+<img src="https://img.shields.io/codeclimate/coverage/github/bamlab/bam-cmd.svg" alt="Coverage"></p>
+
+<p>Make automatic build and install with a single command interface and plugins.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>To install the bam command, just run in a terminal :</p>
+
+<pre><code>npm install -g git@github.com:bamlab/bam-cmd.git
+</code></pre>
+
+<p>If you want to fix the version to use in a particular project, just install it locally :</p>
+
+<pre><code>npm install --save-dev git@github.com:bamlab/bam-cmd.git
+</code></pre>
+
+<h2>
+<a id="quick-start" class="anchor" href="#quick-start" aria-hidden="true"><span class="octicon octicon-link"></span></a>Quick Start</h2>
+
+<p>BAM give you great tools to create an installation, a build and a deploy script for your project.</p>
+
+<p>To start using it, just write in your main directory :</p>
+
+<pre><code>bam init
+</code></pre>
+
+<p>A new file <code>bam.js</code> will be created with some bootstrap code. This is where you will configure the command.
+It should return a plain object with the configuration options for the command.</p>
+
+<h3>
+<a id="build-and-deploy" class="anchor" href="#build-and-deploy" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build and Deploy</h3>
+
+<p>The BAM command have 2 subcommand for building and deploying. This is :</p>
+
+<pre><code>bam build [-e &lt;env&gt;]
+bam deploy [-e &lt;env&gt;]
+</code></pre>
+
+<p>When a developer use its in your project folder, the methods <code>build</code> and <code>deploy</code> of your option object will be called.
+The method can accept as parameter an object with the command line options.</p>
+
+<p>If you want to accept extra parameters from the command line, you can use the <code>buildOptions</code> methods. It accept a Commander object.</p>
+
+<p>Example :</p>
+
+<pre><code>$ cat bam.js
+
+module.exports = {
+  buildOptions: function(commander) {
+    commander.option('-d --doge', 'Doge');
+  },
+  build: function(options) {
+    console.log('In Build script');
+    console.log(options.env);
+    console.log(options.doge);
+  },
+  deploy: function(options) {
+    console.log('In Deploy Script');
+  }
+};
+
+$ bam build
+Run Build
+In Build script
+staging
+undefined
+
+$ bam build -e prod -d
+Run Build
+In Build script
+prod
+true
+
+$ bam deploy
+Run Deploy
+In Deploy Script
+</code></pre>
+
+<h3>
+<a id="installation-script" class="anchor" href="#installation-script" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation script</h3>
+
+<p>BAM provide a command to install a project from scratch. The only thing the user has to do is to place in an empty directory and to run:</p>
+
+<pre><code>bam install git@github.com:yourUser/yourRepo.git
+</code></pre>
+
+<p>The command will do the following action :
+1. clone your repository with <code>git</code> in a new directory.
+2. Run <code>npm install</code> if your project contains a <code>package.json</code> file
+3. Look for a <code>bam.js</code> or a <code>bam.json</code> file and load it.
+4. Rename your project folder with the content of the <code>dirName</code> option
+5. Do the same actions with all the project given in the <code>linkedRepos</code> option
+6. Run your installation method</p>
+
+<p>The step 2 allows you to require some locally installed script at the beginning of your <code>bam.js</code> file.</p>
+
+<p>If you have more one repository for your entire project (like a back, a front and a provisioning) you can use the <code>linkedRepos</code> configuration. It is simply an array of repository names.</p>
+
+<h2>
+<a id="reference" class="anchor" href="#reference" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reference</h2>
+
+<h3>
+<a id="commands" class="anchor" href="#commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Commands</h3>
+
+<pre><code>bam install [repoName]  Install a repository
+bam deploy [env]        Deploy project on servers or the store
+bam build               Build a project or an app
+bam init                Create an empty bam.js
+bam run-install         Run the install script of the project
+bam help [cmd]          display help for [cmd]
+</code></pre>
+
+<p>The repository name could be specified in all accepted git format. The command accept the following format : </p>
+
+<ul>
+<li>
+<code>orga/package.git</code> will be used as <code>git@github.com:orga/package.git</code> </li>
+<li>
+<code>package.git</code> will be used as <code>git@github.com:bamlab/package.git</code>
+</li>
+<li>
+<code>orga/package</code> will be used as <code>git@github.com:orga/package.git</code> </li>
+<li>
+<code>package</code> will be used as <code>git@github.com:bamlab/package.git</code> </li>
+</ul>
+
+<h3>
+<a id="project-configuration" class="anchor" href="#project-configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Project Configuration</h3>
+
+<p>The configuration must be in a file named <code>bam.js</code> in your project directory. It must export an object which could have the following attributes :</p>
+
+<p><strong>build</strong></p>
+
+<p>type: <code>function(config)</code></p>
+
+<p>params:</p>
+
+<ul>
+<li>config : <a href="https://github.com/tj/commander.js">Commander</a> object with the parsed command arguments</li>
+</ul>
+
+<p>The script to run for building the project.</p>
+
+<p><strong>deploy</strong></p>
+
+<p>type: <code>function(config)</code></p>
+
+<p>params:</p>
+
+<ul>
+<li>config : <a href="https://github.com/tj/commander.js">Commander</a> object with the parsed command arguments</li>
+</ul>
+
+<p>The script to run for deploying the project.</p>
+
+<p><strong>install</strong></p>
+
+<p>type: <code>function()</code></p>
+
+<p>The script to run for installing the project. When the function is called, the <code>npm install</code> command has already been run if needed.</p>
+
+<p><strong>dirName</strong></p>
+
+<p>type: <code>String</code></p>
+
+<p>The name of the project directory. If undefined or blank, the porject dir will not been renamed.</p>
+
+<p><strong>linkedRepos</strong></p>
+
+<p>type: <code>Array</code> of <code>string</code></p>
+
+<p>List of linked repository to install in the same parent folder of the project. Usefull when the back, the front and the provisionning are in different repositories. The names must have the same form than in the <code>bam install</code> command.</p>
+
+<p>At the project installation, the will do the same actions than the <code>bam install</code> command on each project. The only two differences are :</p>
+
+<ol>
+<li>If no <code>bam.js</code> file is fould, no error is throwed.</li>
+<li>The linked repositories are not recursively installed</li>
+</ol>
+
+<h2>
+<a id="running-the-test" class="anchor" href="#running-the-test" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running the test</h2>
+
+<p>You can run the tests with</p>
+
+<pre><code>   npm test
+</code></pre>
+
+<p>If you want to generate the code coverage, use :</p>
+
+<pre><code>./node_modules/istanbul/lib/cli.js cover --dir ./coverage ./node_modules/mocha/bin/_mocha -- test
+</code></pre>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/bamlab">bamlab</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
