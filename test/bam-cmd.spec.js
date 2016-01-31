@@ -309,15 +309,16 @@ describe('bam-cmd main module', function() {
     });
   });
 
-  // run install script
+  // run setup Project commad
   it('should launch the bam-run-install script', function() {
     sinon.stub(childProcess, 'fork');
 
-    bamCmd.runInstallScript('directory');
+    bamCmd.runSetupProjectCommand('directory');
     expect(childProcess.fork.called).to.be.true;
 
     expect(childProcess.fork.getCall(0).args[0]).to.match(/bam-run-install$/);
-    expect(childProcess.fork.getCall(0).args[1].cwd).to.be.equals('directory');
+    expect(childProcess.fork.getCall(0).args[1][0]).to.be.equals('-s');
+    expect(childProcess.fork.getCall(0).args[2].cwd).to.be.equals('directory');
     childProcess.fork.restore();
   });
 
@@ -370,33 +371,24 @@ describe('bam-cmd main module', function() {
     sinon.stub(bamCmd, 'cloneRepository');
     sinon.stub(bamCmd, 'installNodeDependencies');
     sinon.stub(bamCmd, 'loadFromDir');
-    sinon.stub(bamCmd, 'renameProjectDir');
-    sinon.stub(bamCmd, 'fetchLinkedRepos');
-    sinon.stub(bamCmd, 'runInstallScript');
+    sinon.stub(bamCmd, 'setupProject');
 
     bamCmd.cloneRepository.returns(Promise.resolve('dest'));
     bamCmd.installNodeDependencies.returns(Promise.resolve());
     bamCmd.loadFromDir.returns(Promise.resolve());
-    bamCmd.renameProjectDir.returns(Promise.resolve());
-    bamCmd.fetchLinkedRepos.returns(Promise.resolve());
-    bamCmd.runInstallScript.returns(Promise.resolve());
+    bamCmd.setupProject.returns(Promise.resolve());
 
     return bamCmd.installProject().then(function() {
 
       expect(bamCmd.cloneRepository.called).to.be.true;
       expect(bamCmd.installNodeDependencies.called).to.be.true;
       expect(bamCmd.loadFromDir.called).to.be.true;
-      expect(bamCmd.renameProjectDir.called).to.be.true;
-      expect(bamCmd.fetchLinkedRepos.called).to.be.true;
-      expect(bamCmd.runInstallScript.called).to.be.true;
-
+      expect(bamCmd.setupProject.called).to.be.true;
 
       bamCmd.cloneRepository.restore();
       bamCmd.installNodeDependencies.restore();
       bamCmd.loadFromDir.restore();
-      bamCmd.renameProjectDir.restore();
-      bamCmd.fetchLinkedRepos.restore();
-      bamCmd.runInstallScript.restore();
+      bamCmd.setupProject.restore();
     });
   });
 

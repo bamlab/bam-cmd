@@ -22,5 +22,5 @@ bam.launch({}, function(env) {
     bamCmd = require('../lib/bam-cmd');
   }
 
-  bamCmd.createCommand(env, process.argv).runInstall();
+  bamCmd.createCommand(env, process.argv).install();
 });
