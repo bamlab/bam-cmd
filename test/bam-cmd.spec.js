@@ -2,7 +2,6 @@ var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
 
-var process = require('process');
 var path = require('path');
 var childProcess = require('child_process');
 var Promise = require('bluebird');
