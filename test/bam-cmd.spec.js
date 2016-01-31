@@ -2,6 +2,7 @@ var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
 
+var process = require('process');
 var path = require('path');
 var childProcess = require('child_process');
 var Promise = require('bluebird');
@@ -367,7 +368,7 @@ describe('bam-cmd main module', function() {
   });
 
   // project installation
-  it('should do all the 6 documentated steps', function() {
+  it('should do all the 3 first documentated steps', function() {
     sinon.stub(bamCmd, 'cloneRepository');
     sinon.stub(bamCmd, 'installNodeDependencies');
     sinon.stub(bamCmd, 'loadFromDir');
@@ -443,6 +444,79 @@ describe('bam-cmd main module', function() {
   });
 
 
+  // setup project
+  it ('should do the 3 remaining steps', function() {
+    sinon.stub(bamCmd, 'renameProjectDir');
+    sinon.stub(bamCmd, 'fetchLinkedRepos');
+    sinon.stub(bamCmd, 'runInstall');
 
+    var config = {};
+    var options = {};
+
+    bamCmd.renameProjectDir.returns(Promise.resolve());
+    bamCmd.fetchLinkedRepos.returns(Promise.resolve());
+    bamCmd.runInstall.returns(Promise.resolve());
+
+    return bamCmd.setupProject(process.cwd(), config, options).then(function() {
+
+      expect(bamCmd.renameProjectDir.called).to.be.true;
+      expect(bamCmd.fetchLinkedRepos.called).to.be.true;
+      expect(bamCmd.runInstall.called).to.be.true;
+
+      expect(bamCmd.renameProjectDir.getCall(0).args[0]).to.be.equals(process.cwd());
+      expect(bamCmd.renameProjectDir.getCall(0).args[1]).to.be.equals(config);
+
+      expect(bamCmd.fetchLinkedRepos.getCall(0).args[0]).to.be.equals(config);
+
+      expect(bamCmd.runInstall.getCall(0).args[0]).to.be.equals(config);
+      expect(bamCmd.runInstall.getCall(0).args[1]).to.be.equals(options);
+
+      bamCmd.renameProjectDir.restore();
+      bamCmd.fetchLinkedRepos.restore();
+      bamCmd.runInstall.restore();
+    });
+  }); 
+
+  it ('should don\'t install linked', function() {
+    sinon.stub(bamCmd, 'renameProjectDir');
+    sinon.stub(bamCmd, 'fetchLinkedRepos');
+    sinon.stub(bamCmd, 'runInstall');
+
+    bamCmd.renameProjectDir.returns(Promise.resolve());
+    bamCmd.runInstall.returns(Promise.resolve());
+    var options = {
+      installLinked: false
+    };
+
+    return bamCmd.setupProject('.', {}, options).then(function() {
+
+      expect(bamCmd.fetchLinkedRepos.called).to.be.false;
+
+      bamCmd.renameProjectDir.restore();
+      bamCmd.fetchLinkedRepos.restore();
+      bamCmd.runInstall.restore();
+    });
+  });
+
+  it ('should call the run install command if not in the good dir', function() {
+    sinon.stub(bamCmd, 'runSetupProjectCommand');
+    sinon.stub(bamCmd, 'renameProjectDir');
+    bamCmd.runSetupProjectCommand.returns(Promise.resolve());
+
+    var config = {};
+    var options = {};
+    return bamCmd.setupProject('..', config, options).then(function() {
+
+      expect(bamCmd.renameProjectDir.called).to.be.false;
+      expect(bamCmd.runSetupProjectCommand.called).to.be.true;
+
+      expect(bamCmd.runSetupProjectCommand.getCall(0).args[0]).to.be.equals('..');
+      expect(bamCmd.runSetupProjectCommand.getCall(0).args[1]).to.be.equals(config);
+      expect(bamCmd.runSetupProjectCommand.getCall(0).args[2]).to.be.equals(options);
+
+      bamCmd.runSetupProjectCommand.restore();
+      bamCmd.renameProjectDir.restore();
+    });
+  }); 
 
 });
