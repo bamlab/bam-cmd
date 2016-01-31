@@ -164,6 +164,13 @@ describe('commands', function() {
     return command.deploy();
   });
 
+  it('should catch install errors', function() {
+    var command = new Command({}, [], {
+      install: function() {return Promise.reject()},
+    });
+    return command.install();
+  });
+
   it('should get install options', function() {
     return defaultCommand.getInstallOptions(['node', 'cmd', '-s'])
       .then(function(options) {
