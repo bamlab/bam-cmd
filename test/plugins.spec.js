@@ -5,31 +5,72 @@ var expect = chai.expect;
 var bamCmd = require('../lib/bam-cmd.js');
 var Config = require('../lib/config.js');
 
+function newPlugin() {
+  return {
+    install: sinon.spy(),
+    postInstall: sinon.spy(),
+  };
+}
+
 describe('plugins', function() {
 
-  it('should launch the plugin install function before the project one', function() {
-    var plugin = {
+  var plugin1, plugin2;
+  var bamjs, config;
+
+  var options = {};
+
+  beforeEach(function() {
+
+    options = {};
+
+    plugin1 = newPlugin();
+    plugin2 = newPlugin();
+
+    bamjs = {
+      plugins: [plugin1, plugin2],
       install: sinon.spy(),
     };
-    var bamjs = {
-      plugins: [
-        plugin,
-      ],
-      install: sinon.spy(),
-    };
 
-    var config = new Config(bamjs);
-    var options = {};
+    config = new Config(bamjs);
+    return config.load();
+  });
 
-    return config.load().then(function() {
-      return bamCmd.runInstall(config, options);
-    }).then(function() {
-      expect(plugin.install.called).to.be.true;
-      expect(plugin.install.firstCall.args[0]).to.be.equals(options);
-      expect(bamjs.install.called).to.be.true;
-      expect(plugin.install.calledBefore(plugin.install.called)).to.be.true;
-    });
+  it('should launch the plugin install functions in the right order', function() {
+    return bamCmd.runInstall(config, options)
+      .then(function() {
+        // all called
+        expect(plugin1.install.calledOnce).to.be.true;
+        expect(plugin2.install.calledOnce).to.be.true;
+        expect(bamjs.install.calledOnce).to.be.true;
 
+        // with args
+        expect(plugin1.install.firstCall.args[0]).to.be.equals(options);
+        expect(plugin2.install.firstCall.args[0]).to.be.equals(options);
+
+        // in good order
+        expect(plugin1.install.calledBefore(plugin2.install)).to.be.true;
+        expect(plugin2.install.calledBefore(bamjs.install)).to.be.true;
+        expect(plugin1.install.calledBefore(bamjs.install)).to.be.true;
+      });
+  });
+
+  it('should launch the plugin postInstall functions in the right order', function() {
+    return bamCmd.runInstall(config, options)
+      .then(function() {
+        // all called
+        expect(plugin1.postInstall.calledOnce).to.be.true;
+        expect(plugin2.postInstall.calledOnce).to.be.true;
+        expect(bamjs.install.calledOnce).to.be.true;
+
+        // with args
+        expect(plugin1.postInstall.firstCall.args[0]).to.be.equals(options);
+        expect(plugin2.postInstall.firstCall.args[0]).to.be.equals(options);
+
+        // in good order
+        expect(plugin2.postInstall.calledBefore(plugin1.postInstall)).to.be.true;
+        expect(bamjs.install.calledBefore(plugin2.postInstall)).to.be.true;
+        expect(bamjs.install.calledBefore(plugin1.postInstall)).to.be.true;
+      });
   });
 
 });
