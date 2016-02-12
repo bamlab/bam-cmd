@@ -270,15 +270,16 @@ describe('bam-cmd main module', function() {
 
 
   // linked repositories
-  it('should install le linked repositories', function() {
+  it('should install the linked repositories', function() {
     sinon.stub(bamCmd, 'installProject');
 
     var repos = ['repo1', 'rep2', 'r3'];
     var config = {getLinkedRepos: function() {
       return repos;
     }};
+    var projectConfig = {};
 
-    bamCmd.installProject.returns(Promise.resolve());
+    bamCmd.installProject.returns(Promise.resolve(projectConfig));
     var promise = bamCmd.fetchLinkedRepos(config, 'baseDir');
 
     expect(bamCmd.installProject.callCount).to.be.equals(3);
@@ -292,8 +293,14 @@ describe('bam-cmd main module', function() {
       expect(args[3]).to.be.equals(true);
     }
 
-    expect(promise.then).to.exist;
     bamCmd.installProject.restore();
+
+    return promise.then(function(result) {
+      expect(result.length).to.be.equals(3);
+      expect(result[0]).to.be.equals(projectConfig);
+      expect(result[1]).to.be.equals(projectConfig);
+      expect(result[2]).to.be.equals(projectConfig);
+    });
   });
 
 
@@ -368,6 +375,7 @@ describe('bam-cmd main module', function() {
 
   // project installation
   it('should do all the 3 first documentated steps', function() {
+    var config = {};
     sinon.stub(bamCmd, 'cloneRepository');
     sinon.stub(bamCmd, 'installNodeDependencies');
     sinon.stub(bamCmd, 'loadFromDir');
@@ -375,15 +383,17 @@ describe('bam-cmd main module', function() {
 
     bamCmd.cloneRepository.returns(Promise.resolve('dest'));
     bamCmd.installNodeDependencies.returns(Promise.resolve());
-    bamCmd.loadFromDir.returns(Promise.resolve());
+    bamCmd.loadFromDir.returns(Promise.resolve(config));
     bamCmd.setupProject.returns(Promise.resolve());
 
-    return bamCmd.installProject().then(function() {
+    return bamCmd.installProject().then(function(returnValue) {
 
       expect(bamCmd.cloneRepository.called).to.be.true;
       expect(bamCmd.installNodeDependencies.called).to.be.true;
       expect(bamCmd.loadFromDir.called).to.be.true;
       expect(bamCmd.setupProject.called).to.be.true;
+
+      expect(returnValue).to.be.equals(config);
 
       bamCmd.cloneRepository.restore();
       bamCmd.installNodeDependencies.restore();
@@ -452,10 +462,13 @@ describe('bam-cmd main module', function() {
     var config = {
       runPostInstall: sinon.spy()
     };
+    var linkedConfig = {
+      runPostInstall: sinon.spy()
+    };
     var options = {};
 
     bamCmd.renameProjectDir.returns(Promise.resolve());
-    bamCmd.fetchLinkedRepos.returns(Promise.resolve());
+    bamCmd.fetchLinkedRepos.returns(Promise.resolve([linkedConfig]));
     bamCmd.runInstall.returns(Promise.resolve());
 
     return bamCmd.setupProject(process.cwd(), config, options).then(function() {
@@ -463,7 +476,9 @@ describe('bam-cmd main module', function() {
       expect(bamCmd.renameProjectDir.called).to.be.true;
       expect(bamCmd.fetchLinkedRepos.called).to.be.true;
       expect(bamCmd.runInstall.called).to.be.true;
+
       expect(config.runPostInstall.called).to.be.true;
+      expect(linkedConfig.runPostInstall.called).to.be.true;
 
       expect(bamCmd.renameProjectDir.getCall(0).args[0]).to.be.equals(process.cwd());
       expect(bamCmd.renameProjectDir.getCall(0).args[1]).to.be.equals(config);
