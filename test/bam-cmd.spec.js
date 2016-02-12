@@ -449,7 +449,9 @@ describe('bam-cmd main module', function() {
     sinon.stub(bamCmd, 'fetchLinkedRepos');
     sinon.stub(bamCmd, 'runInstall');
 
-    var config = {};
+    var config = {
+      runPostInstall: sinon.spy()
+    };
     var options = {};
 
     bamCmd.renameProjectDir.returns(Promise.resolve());
@@ -461,6 +463,7 @@ describe('bam-cmd main module', function() {
       expect(bamCmd.renameProjectDir.called).to.be.true;
       expect(bamCmd.fetchLinkedRepos.called).to.be.true;
       expect(bamCmd.runInstall.called).to.be.true;
+      expect(config.runPostInstall.called).to.be.true;
 
       expect(bamCmd.renameProjectDir.getCall(0).args[0]).to.be.equals(process.cwd());
       expect(bamCmd.renameProjectDir.getCall(0).args[1]).to.be.equals(config);
@@ -486,10 +489,15 @@ describe('bam-cmd main module', function() {
     var options = {
       installLinked: false
     };
+    var config = {
+      runPostInstall: sinon.spy()
+    };
 
-    return bamCmd.setupProject('.', {}, options).then(function() {
+    return bamCmd.setupProject('.', config, options).then(function() {
 
       expect(bamCmd.fetchLinkedRepos.called).to.be.false;
+      expect(bamCmd.runInstall.called).to.be.true;
+      expect(config.runPostInstall.called).to.be.true;
 
       bamCmd.renameProjectDir.restore();
       bamCmd.fetchLinkedRepos.restore();

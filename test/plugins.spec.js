@@ -77,4 +77,14 @@ describe('plugins', function() {
       });
   });
 
+  it('should don\'t launch the plugin postInstall functions', function() {
+    return bamCmd.runInstall(config, options, true)
+      .then(function() {
+        expect(bamjs.install.called).to.be.true;
+
+        expect(plugin1.postInstall.called).to.be.false;
+        expect(plugin2.postInstall.called).to.be.false;
+        expect(bamjs.postInstall.called).to.be.false;
+      });
+  });
 });
