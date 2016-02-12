@@ -29,6 +29,7 @@ describe('plugins', function() {
     bamjs = {
       plugins: [plugin1, plugin2],
       install: sinon.spy(),
+      postInstall: sinon.spy()
     };
 
     config = new Config(bamjs);
@@ -61,15 +62,18 @@ describe('plugins', function() {
         expect(plugin1.postInstall.calledOnce).to.be.true;
         expect(plugin2.postInstall.calledOnce).to.be.true;
         expect(bamjs.install.calledOnce).to.be.true;
+        expect(bamjs.postInstall.calledOnce).to.be.true;
 
         // with args
         expect(plugin1.postInstall.firstCall.args[0]).to.be.equals(options);
         expect(plugin2.postInstall.firstCall.args[0]).to.be.equals(options);
+        expect(bamjs.postInstall.firstCall.args[0]).to.be.equals(options);
 
         // in good order
         expect(plugin2.postInstall.calledBefore(plugin1.postInstall)).to.be.true;
         expect(bamjs.install.calledBefore(plugin2.postInstall)).to.be.true;
         expect(bamjs.install.calledBefore(plugin1.postInstall)).to.be.true;
+        expect(plugin1.postInstall.calledBefore(bamjs.postInstall)).to.be.true;
       });
   });
 
