@@ -147,6 +147,14 @@ type: `function()`
 
 The script to run for installing the project. When the function is called, the `npm install` command has already been run if needed.
 
+You cannot assume in this method than the linked repositories are installed. It will be run at the same times as the 
+clones
+
+**postInstall**
+
+type: `function()`
+
+This method is run at the end of the clone and installation of all the liked repositories.
 
 **dirName**
 
