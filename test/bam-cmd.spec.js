@@ -127,23 +127,34 @@ describe('bam-cmd main module', function() {
     childProcess.spawn.restore();
   });
 
-  it('should run a command', function() {
-    sinon.stub(bamCmd, 'spawn');
+  it('should run a command', function(done) {
+    sinon.stub(childProcess, 'spawn');
 
-    var returns = {then: function() {}};
-    var cmd = 'ls';
-    var args = ['args'];
+    var errorCode = 0;
+    var eventManager = {
+      on: function(event, cb) {return cb(errorCode);}
+    };
 
-    bamCmd.spawn.returns(returns);
+    childProcess.spawn.returns(eventManager);
 
-    expect(bamCmd.run(cmd, args)).to.be.equals(returns);
-    expect(bamCmd.spawn.called).to.be.true;
+    var success = sinon.spy();
+    var error = sinon.spy();
 
-    var spawnCallArgs = bamCmd.spawn.getCall(0).args;
-    expect(spawnCallArgs[0]).to.be.equals(cmd);
-    expect(spawnCallArgs[1]).to.be.equals(args);
+    bamCmd.run('ls', ['args']).then(success, error)
+      .then(function() {
+        expect(success.called).to.be.true;
+        expect(error.called).to.be.false;
 
-    bamCmd.spawn.restore();
+        errorCode = 1;
+        return bamCmd.run('ls', ['args']).then(success, error);
+      })
+      .then(function() {
+        expect(error.called).to.be.true;
+        done();
+      }, done);
+
+
+    childProcess.spawn.restore();
   });
 
 
