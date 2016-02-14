@@ -125,7 +125,7 @@ The configuration must be in a file named `bam.js` in your project directory. It
 
 **build**
 
-type: `function(config)`
+type: `function(config)` or `string`
 
 params:
 + config : [Commander](https://github.com/tj/commander.js) object with the parsed command arguments
@@ -134,7 +134,7 @@ The script to run for building the project.
 
 **deploy**
 
-type: `function(config)`
+type: `function(config)` or `string`
 
 params:
 + config : [Commander](https://github.com/tj/commander.js) object with the parsed command arguments
@@ -143,7 +143,7 @@ The script to run for deploying the project.
 
 **install**
 
-type: `function()`
+type: `function()` or `string`
 
 The script to run for installing the project. When the function is called, the `npm install` command has already been run if needed.
 
@@ -152,7 +152,7 @@ clones
 
 **postInstall**
 
-type: `function()`
+type: `function()` or `string`
 
 This method is run at the end of the clone and installation of all the liked repositories.
 

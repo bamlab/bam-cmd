@@ -1,14 +1,15 @@
 var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
-var _ = require('lodash');
+
+var path = require('path');
+var childProcess = require('child_process');
+var Promise = require('bluebird');
 
 var Config = require('../lib/config');
 
-var path = require('path');
-var fs = require('fs');
-
 var plainConfig = require('./fixtures/bam-default');
+var stringCommandsConfig = require('./fixtures/bam-strings-commands');
 
 function expectToBeRejected(promise) {
   expect(promise.then).to.exist;
@@ -221,6 +222,27 @@ describe('Config Entity', function() {
     var config = new Config({});
     return config.load().then(function() {
       expectToBeRejected(config.runDeploy());
+    });
+  });
+
+  it('should accept commands as string', function() {
+    sinon.stub(childProcess, 'spawn');
+    var eventManager = {on: function(event, cb) {return cb(0);}};
+    childProcess.spawn.returns(eventManager);
+
+    var config = new Config(stringCommandsConfig);
+
+    return config.load().then(function() {
+      return Promise.all([
+        config.runInstall({}),
+        config.runBuild({}),
+        config.runDeploy({}),
+      ]);
+    }).then(function() {
+      // the 4th is the postinstall param
+      expect(childProcess.spawn.getCalls().length).to.be.equals(4);
+
+      childProcess.spawn.restore();
     });
   });
 

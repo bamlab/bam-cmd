@@ -17,7 +17,7 @@ describe('bam-cmd main module', function() {
   it('should return the full url', function () {
     var defaultConfig = {
       defaultBaseUrl: 'git@github.com:',
-      defaultUrlFolder: 'orga'
+      defaultUrlFolder: 'orga',
     };
     var originalLoasScriptConfigFunction = bamCmd.loadScriptConfig;
     bamCmd.loadScriptConfig = function () {
