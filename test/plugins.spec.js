@@ -47,7 +47,7 @@ function expectAllCalledWithParamters(methods, parameters) {
 
 describe('plugins', function() {
 
-  var plugin1, plugin2;
+  var plugin1, plugin2, plugin1_1, plugin1_2;
   var bamjs, config;
 
   var options = {};
@@ -58,6 +58,10 @@ describe('plugins', function() {
 
     plugin1 = newPlugin();
     plugin2 = newPlugin();
+
+    plugin1_1 = newPlugin();
+    plugin1_2 = newPlugin();
+    plugin1.plugins = [plugin1_1, plugin1_2];
 
     bamjs = {
       plugins: [plugin1, plugin2],
@@ -74,10 +78,14 @@ describe('plugins', function() {
       .then(function() {
 
         var callList = [
+          plugin1_1.install,
+          plugin1_2.install,
           plugin1.install,
           plugin2.install,
           bamjs.install,
           plugin2.postInstall,
+          plugin1_2.postInstall,
+          plugin1_1.postInstall,
           plugin1.postInstall,
           bamjs.postInstall,
         ];
