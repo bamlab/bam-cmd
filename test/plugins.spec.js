@@ -1,3 +1,5 @@
+/* global describe, it, beforeEach */
+
 var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
@@ -29,7 +31,7 @@ describe('plugins', function() {
     bamjs = {
       plugins: [plugin1, plugin2],
       install: sinon.spy(),
-      postInstall: sinon.spy()
+      postInstall: sinon.spy(),
     };
 
     config = new Config(bamjs);

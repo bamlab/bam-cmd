@@ -1,3 +1,5 @@
+/* global describe, it, before, after */
+
 var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
@@ -47,7 +49,7 @@ describe('commands', function() {
 
     var command = new Command({});
     return command.loadConfig()
-      .then(function(config) {
+      .then(function() {
         expect(bamCmd.loadConfig.called).to.be.true;
         expect(bamCmd.loadConfig.getCall(0).args.length).to.be.equal(0);
         bamCmd.loadConfig.restore();
@@ -152,21 +154,21 @@ describe('commands', function() {
 
   it('should catch build errors', function() {
     var command = new Command({}, [], {
-      build: function() {return Promise.reject()},
+      build: function() {return Promise.reject();},
     });
     return command.build();
   });
 
   it('should catch deploy errors', function() {
     var command = new Command({}, [], {
-      deploy: function() {return Promise.reject()},
+      deploy: function() {return Promise.reject();},
     });
     return command.deploy();
   });
 
   it('should catch install errors', function() {
     var command = new Command({}, [], {
-      install: function() {return Promise.reject()},
+      install: function() {return Promise.reject();},
     });
     return command.install();
   });

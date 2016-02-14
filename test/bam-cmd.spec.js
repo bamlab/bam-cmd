@@ -1,3 +1,5 @@
+/* global describe, it */
+
 var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
@@ -73,7 +75,7 @@ describe('bam-cmd main module', function() {
     sinon.stub(childProcess, 'spawn');
 
     var eventManager = {
-      on: function(event, cb) {return cb(0);}
+      on: function(event, cb) {return cb(0);},
     };
 
     childProcess.spawn.returns(eventManager);
@@ -81,9 +83,6 @@ describe('bam-cmd main module', function() {
     var cmd = 'ls';
     var args = ['args'];
     var options = {cwd: '..'};
-
-    var success = sinon.spy();
-    var error = sinon.spy();
 
     bamCmd.spawn(cmd, args, options);
     expect(childProcess.spawn.called).to.be.true;
@@ -102,7 +101,7 @@ describe('bam-cmd main module', function() {
 
     var errorCode = 0;
     var eventManager = {
-      on: function(event, cb) {return cb(errorCode);}
+      on: function(event, cb) {return cb(errorCode);},
     };
 
     childProcess.spawn.returns(eventManager);
@@ -132,7 +131,7 @@ describe('bam-cmd main module', function() {
 
     var errorCode = 0;
     var eventManager = {
-      on: function(event, cb) {return cb(errorCode);}
+      on: function(event, cb) {return cb(errorCode);},
     };
 
     childProcess.spawn.returns(eventManager);
@@ -163,14 +162,14 @@ describe('bam-cmd main module', function() {
     sinon.stub(bamCmd, 'run');
 
     bamCmd.run.returns(Promise.resolve());
-    repo = repos[0];
+    var repo = repos[0];
 
-    var promise = bamCmd.cloneRepository(repo.givenParam, 'dir', 'parent');
+    bamCmd.cloneRepository(repo.givenParam, 'dir', 'parent');
 
     var runCallArgs = bamCmd.run.getCall(0).args;
     expect(runCallArgs[0]).to.be.equals('git');
     expect(runCallArgs[1]).to.have.members([
-      'clone', '--recursive', repo.repoFullName, path.resolve('parent', 'dir')
+      'clone', '--recursive', repo.repoFullName, path.resolve('parent', 'dir'),
     ]);
 
     bamCmd.run.restore();
@@ -180,14 +179,14 @@ describe('bam-cmd main module', function() {
     sinon.stub(bamCmd, 'run');
 
     bamCmd.run.returns(Promise.resolve());
-    repo = repos[0];
+    var repo = repos[0];
 
-    var promise = bamCmd.cloneRepository(repo.givenParam);
+    bamCmd.cloneRepository(repo.givenParam);
 
     var runCallArgs = bamCmd.run.getCall(0).args;
     expect(runCallArgs[0]).to.be.equals('git');
     expect(runCallArgs[1]).to.have.members([
-      'clone', '--recursive', repo.repoFullName, path.resolve('.', repo.repoName)
+      'clone', '--recursive', repo.repoFullName, path.resolve('.', repo.repoName),
     ]);
 
     bamCmd.run.restore();
@@ -198,7 +197,7 @@ describe('bam-cmd main module', function() {
   it('should rename a project directory', function() {
     sinon.stub(fs, 'renameSync');
 
-    var expectedFinalDir = "finalDir"
+    var expectedFinalDir = 'finalDir';
     var option = {getDirName: function() {
       return expectedFinalDir;
     }};
@@ -220,7 +219,7 @@ describe('bam-cmd main module', function() {
     sinon.stub(fs, 'renameSync');
     sinon.stub(bamCmd, 'loadFromDir');
 
-    var expectedFinalDir = "finalDir";
+    var expectedFinalDir = 'finalDir';
     var option = {getDirName: function() {
       return expectedFinalDir;
     }};
@@ -244,7 +243,7 @@ describe('bam-cmd main module', function() {
   it('should handle absolute path when rename a project directory', function() {
     sinon.stub(fs, 'renameSync');
 
-    var expectedFinalDir = "finalDir"
+    var expectedFinalDir = 'finalDir';
     var option = {getDirName: function() {
       return expectedFinalDir;
     }};
@@ -345,7 +344,7 @@ describe('bam-cmd main module', function() {
     sinon.stub(fs, 'statSync');
     sinon.stub(bamCmd, 'spawn');
 
-    spawnReturn = {then: function(){}};
+    var spawnReturn = {then: function(){}};
     bamCmd.spawn.returns(spawnReturn);
 
     var promise = bamCmd.installNodeDependencies('directory');
@@ -471,10 +470,10 @@ describe('bam-cmd main module', function() {
     sinon.stub(bamCmd, 'runInstall');
 
     var config = {
-      runPostInstall: sinon.spy()
+      runPostInstall: sinon.spy(),
     };
     var linkedConfig = {
-      runPostInstall: sinon.spy()
+      runPostInstall: sinon.spy(),
     };
     var options = {};
 
@@ -513,10 +512,10 @@ describe('bam-cmd main module', function() {
     bamCmd.renameProjectDir.returns(Promise.resolve());
     bamCmd.runInstall.returns(Promise.resolve());
     var options = {
-      installLinked: false
+      installLinked: false,
     };
     var config = {
-      runPostInstall: sinon.spy()
+      runPostInstall: sinon.spy(),
     };
 
     return bamCmd.setupProject('.', config, options).then(function() {

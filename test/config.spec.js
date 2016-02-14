@@ -1,3 +1,5 @@
+/* global describe, it */
+
 var chai = require('chai');
 var sinon = require('sinon');
 var expect = chai.expect;
@@ -96,14 +98,14 @@ describe('Config Entity', function() {
 
   it('should throw if not loaded when get the dir name', function() {
     var config = new Config();
-    expect(function(){config.getDirName()}).to.throw(Error);
+    expect(function(){config.getDirName();}).to.throw(Error);
   });
 
   it('should get linked repositories', function() {
     var repos = ['repo1', 'rep2', 'r3'];
 
     var config = new Config({
-      linkedRepos: repos
+      linkedRepos: repos,
     });
     return config.load().then(function() {
       expect(config.getLinkedRepos()).to.be.equals(repos);
@@ -120,7 +122,7 @@ describe('Config Entity', function() {
 
   it('should throw if not loaded when get the dir name', function() {
     var config = new Config();
-    expect(function(){config.getLinkedRepos()}).to.throw(Error);
+    expect(function(){config.getLinkedRepos();}).to.throw(Error);
   });
 
 

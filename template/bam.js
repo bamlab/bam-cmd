@@ -23,5 +23,5 @@ module.exports = {
   deploy: function(options) {
     console.log(options.env);
     console.log(options.doge);
-  }
+  },
 };
