@@ -13,6 +13,8 @@ function newPlugin() {
   return {
     install: sinon.spy(),
     postInstall: sinon.spy(),
+    build: sinon.spy(),
+    postBuild: sinon.spy(),
   };
 }
 
@@ -67,6 +69,8 @@ describe('plugins', function() {
       plugins: [plugin1, plugin2],
       install: sinon.spy(),
       postInstall: sinon.spy(),
+      build: sinon.spy(),
+      postBuild: sinon.spy(),
     };
 
     config = new Config(bamjs);
@@ -88,6 +92,28 @@ describe('plugins', function() {
           plugin1_1.postInstall,
           plugin1.postInstall,
           bamjs.postInstall,
+        ];
+
+        expectCalledOnceInGoodOrder(callList);
+        expectAllCalledWithParamters(callList, [options]);
+      });
+  });
+
+  it('should launch the plugin build functions in the right order', function() {
+    return config.runBuild(config, options)
+      .then(function() {
+
+        var callList = [
+          plugin1_1.build,
+          plugin1_2.build,
+          plugin1.build,
+          plugin2.build,
+          bamjs.build,
+          plugin2.postBuild,
+          plugin1_2.postBuild,
+          plugin1_1.postBuild,
+          plugin1.postBuild,
+          bamjs.postBuild,
         ];
 
         expectCalledOnceInGoodOrder(callList);
