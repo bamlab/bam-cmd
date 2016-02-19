@@ -482,7 +482,7 @@ describe('bam-cmd main module', function() {
     var options = {};
 
     bamCmd.renameProjectDir.returns(Promise.resolve());
-    bamCmd.fetchLinkedRepos.returns(Promise.resolve([linkedConfig]));
+    bamCmd.fetchLinkedRepos.returns(Promise.resolve([linkedConfig, null]));
     bamCmd.runInstall.returns(Promise.resolve());
 
     return bamCmd.setupProject(process.cwd(), config, options).then(function() {
