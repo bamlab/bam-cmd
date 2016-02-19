@@ -53,4 +53,9 @@ parseOptions()
   .then(checkDirEmpty)
   .then(function(param) {
     return bamCmd.installProject(param.repoName, param.dir, true);
+  })
+  .catch(function (err) {
+    console.error((err + '').red);
+    console.error('Aborting.'.red);
+    process.exit(1);
   });
