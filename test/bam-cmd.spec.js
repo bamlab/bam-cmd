@@ -329,14 +329,18 @@ describe('bam-cmd main module', function() {
   // run setup Project commad
   it('should launch the bam-run-install script', function() {
     sinon.stub(childProcess, 'fork');
+    var eventManager = {on: function(event, cb) {return cb(0);},};
+    childProcess.fork.returns(eventManager);
 
-    bamCmd.runSetupProjectCommand('directory');
-    expect(childProcess.fork.called).to.be.true;
+    return bamCmd.runSetupProjectCommand('directory')
+      .then(function() {
+        expect(childProcess.fork.called).to.be.true;
 
-    expect(childProcess.fork.getCall(0).args[0]).to.match(/bam-run-install$/);
-    expect(childProcess.fork.getCall(0).args[1][0]).to.be.equals('-s');
-    expect(childProcess.fork.getCall(0).args[2].cwd).to.be.equals('directory');
-    childProcess.fork.restore();
+        expect(childProcess.fork.getCall(0).args[0]).to.match(/bam-run-install$/);
+        expect(childProcess.fork.getCall(0).args[1][0]).to.be.equals('-s');
+        expect(childProcess.fork.getCall(0).args[2].cwd).to.be.equals('directory');
+        childProcess.fork.restore();
+      });
   });
 
   // npm install
