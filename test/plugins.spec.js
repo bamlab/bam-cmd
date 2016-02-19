@@ -15,6 +15,8 @@ function newPlugin() {
     postInstall: sinon.spy(),
     build: sinon.spy(),
     postBuild: sinon.spy(),
+    deploy: sinon.spy(),
+    postDeploy: sinon.spy(),
   };
 }
 
@@ -71,6 +73,8 @@ describe('plugins', function() {
       postInstall: sinon.spy(),
       build: sinon.spy(),
       postBuild: sinon.spy(),
+      deploy: sinon.spy(),
+      postDeploy: sinon.spy(),
     };
 
     config = new Config(bamjs);
@@ -114,6 +118,28 @@ describe('plugins', function() {
           plugin1_1.postBuild,
           plugin1.postBuild,
           bamjs.postBuild,
+        ];
+
+        expectCalledOnceInGoodOrder(callList);
+        expectAllCalledWithParamters(callList, [options]);
+      });
+  });
+
+  it('should launch the plugin deploy functions in the right order', function() {
+    return config.runDeploy(config, options)
+      .then(function() {
+
+        var callList = [
+          plugin1_1.deploy,
+          plugin1_2.deploy,
+          plugin1.deploy,
+          plugin2.deploy,
+          bamjs.deploy,
+          plugin2.postDeploy,
+          plugin1_2.postDeploy,
+          plugin1_1.postDeploy,
+          plugin1.postDeploy,
+          bamjs.postDeploy,
         ];
 
         expectCalledOnceInGoodOrder(callList);
