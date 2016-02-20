@@ -9,14 +9,14 @@ var _ = require('lodash');
 var bamCmd = require('../lib/bam-cmd.js');
 var Config = require('../lib/config.js');
 
-function newPlugin() {
+function newPlugin(name) {
   return {
-    install: sinon.spy(),
-    postInstall: sinon.spy(),
-    build: sinon.spy(),
-    postBuild: sinon.spy(),
-    deploy: sinon.spy(),
-    postDeploy: sinon.spy(),
+    install: sinon.spy()    .named(name + ' install'),
+    postInstall: sinon.spy().named(name + ' postInstall'),
+    build: sinon.spy()      .named(name + ' build'),
+    postBuild: sinon.spy()  .named(name + ' postBuild'),
+    deploy: sinon.spy()     .named(name + ' deploy'),
+    postDeploy: sinon.spy() .named(name + ' postDeploy'),
   };
 }
 
@@ -26,7 +26,7 @@ function expectCalledOnceInGoodOrder(methods) {
 
     var current = methods[i];
 
-    expect(current.calledOnce).to.be.true;
+    expect(current.calledOnce, 'method ' + current + ' called').to.be.true;
 
     if (i !== 0) {
       var previous = methods[i - 1];
@@ -60,21 +60,21 @@ describe('plugins', function() {
 
     options = {};
 
-    plugin1 = newPlugin();
-    plugin2 = newPlugin();
+    plugin1 = newPlugin('plugin 1');
+    plugin2 = newPlugin('plugin 2');
 
-    plugin1_1 = newPlugin();
-    plugin1_2 = newPlugin();
+    plugin1_1 = newPlugin('plugin 1.1');
+    plugin1_2 = newPlugin('plugin 1.2');
     plugin1.plugins = [plugin1_1, plugin1_2];
 
     bamjs = {
       plugins: [plugin1, plugin2],
-      install: sinon.spy(),
-      postInstall: sinon.spy(),
-      build: sinon.spy(),
-      postBuild: sinon.spy(),
-      deploy: sinon.spy(),
-      postDeploy: sinon.spy(),
+      install: sinon.spy()    .named('bamjs install'),
+      postInstall: sinon.spy().named('bamjs postInstall'),
+      build: sinon.spy()      .named('bamjs build'),
+      postBuild: sinon.spy()  .named('bamjs postBuild'),
+      deploy: sinon.spy()     .named('bamjs deploy'),
+      postDeploy: sinon.spy() .named('bamjs postDeploy'),
     };
 
     config = new Config(bamjs);
