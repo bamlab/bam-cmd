@@ -11,6 +11,10 @@ var defaultCommand = new Command({
   configPath: __dirname + '/fixtures/bam-default.js',
 });
 
+function resolveFunc() {
+  return Promise.resolve();
+}
+
 describe('commands', function() {
 
   before(function() {
@@ -71,29 +75,14 @@ describe('commands', function() {
       });
   });
 
-  it('should run the build function', function() {
-    var buildFn = sinon.spy();
-    var command = new Command(undefined, [], {
-      build: buildFn,
-    });
-    var option = {foo: Math.random()};
-
-    return command.runBuild(option)
-      .then(function() {
-        expect(buildFn.calledWith(option)).to.be.true;
-      });
-  });
-
   it('should run the deploy function', function() {
-    var buildFn = sinon.spy();
-    var command = new Command(undefined, [], {
-      deploy: buildFn,
-    });
+    var command = new Command(undefined, [], {});
     var option = {foo: Math.random()};
+    var config = {launch: sinon.spy(resolveFunc)};
 
-    return command.runDeploy(option)
+    return command.runDeploy(option, config)
       .then(function() {
-        expect(buildFn.calledWith(option)).to.be.true;
+        expect(config.launch.calledWith('deploy', option), 'launch deploy called with good params').to.be.true;
       });
   });
 
@@ -101,16 +90,17 @@ describe('commands', function() {
     var commands = new Command();
     var option = {foo: Math.random()};
     var args = ['node', 'bam-build'];
+    var config = {
+      launch: sinon.spy(resolveFunc),
+    };
 
+    sinon.stub(commands, 'loadConfig').returns(Promise.resolve(config));
+    sinon.stub(commands, 'getOptions').returns(Promise.resolve(option));
 
-    sinon.stub(commands, 'runBuild');
-    sinon.stub(commands, 'getBuildOptions')
-      .returns(Promise.resolve(option));
-
-    commands.build(args)
+    return commands.build(args)
       .then(function() {
-        expect(commands.runBuild.calledWith(option)).to.be.true;
-        expect(commands.getBuildOptions.calledWith(args)).to.be.true;
+        expect(config.launch.calledWith('build', option), 'launch build called with good params').to.be.true;
+        expect(commands.getOptions.calledWith('build', args), 'getOptions build called with good params').to.be.true;
       });
   });
 
@@ -119,17 +109,18 @@ describe('commands', function() {
     var option = {build: true};
     var args = ['node', 'bam-build'];
 
+    var config = {
+      launch: sinon.spy(resolveFunc),
+    };
 
-    sinon.stub(commands, 'runBuild');
-    sinon.stub(commands, 'runDeploy');
-    sinon.stub(commands, 'getBuildOptions')
-      .returns(Promise.resolve(option));
+    sinon.stub(commands, 'loadConfig').returns(Promise.resolve(config));
+    sinon.stub(commands, 'getOptions').returns(Promise.resolve(option));
 
-    commands.deploy(args)
+    return commands.deploy(args)
       .then(function() {
-        expect(commands.runBuild.calledWith(option)).to.be.true;
-        expect(commands.runDeploy.calledWith(option)).to.be.true;
-        expect(commands.getBuildOptions.calledWith(args)).to.be.true;
+        expect(config.launch.calledWith('build', option), 'launch build called with good params').to.be.true;
+        expect(config.launch.calledWith('deploy', option), 'launch deploy called with good params').to.be.true;
+        expect(commands.getOptions.calledWith('deploy', args), 'getOptions build called with good params').to.be.true;
       });
   });
 
@@ -138,17 +129,18 @@ describe('commands', function() {
     var option = {build: false};
     var args = ['node', 'bam-build'];
 
+    var config = {
+      launch: sinon.spy(resolveFunc),
+    };
 
-    sinon.stub(commands, 'runBuild');
-    sinon.stub(commands, 'runDeploy');
-    sinon.stub(commands, 'getBuildOptions')
-      .returns(Promise.resolve(option));
+    sinon.stub(commands, 'loadConfig').returns(Promise.resolve(config));
+    sinon.stub(commands, 'getOptions').returns(Promise.resolve(option));
 
-    commands.deploy(args)
+    return commands.deploy(args)
       .then(function() {
-        expect(commands.runBuild.called).to.be.false;
-        expect(commands.runDeploy.calledWith(option)).to.be.true;
-        expect(commands.getBuildOptions.calledWith(args)).to.be.true;
+        expect(config.launch.calledWith('build', option), 'launch build called with good params').to.be.false;
+        expect(config.launch.calledWith('deploy', option), 'launch deploy called with good params').to.be.true;
+        expect(commands.getOptions.calledWith('deploy', args), 'getOptions build called with good params').to.be.true;
       });
   });
 
@@ -183,38 +175,42 @@ describe('commands', function() {
   it('should run install options and scripts', function() {
     var commands = new Command();
     var args = ['node', 'bam-run-install'];
-    var options = {setup: false};
+    var config = {
+      launch: sinon.spy(resolveFunc),
+      getOptions: sinon.spy(resolveFunc),
+    };
 
+    sinon.stub(commands, 'loadConfig').returns(Promise.resolve(config));
     sinon.stub(commands, 'runInstall');
-    sinon.stub(commands, 'getInstallOptions')
-      .returns(Promise.resolve(options));
 
-    commands.install(args)
+    return commands.install(args)
       .then(function() {
-        expect(commands.getInstallOptions.calledWith(args)).to.be.true;
-        expect(commands.runInstall.calledWith(options)).to.be.true;
+        expect(commands.runInstall.called, 'runInstall called').to.be.true;
       });
   });
 
-  it('should do all the setup in the runInstall command', function() {
-    sinon.stub(bamCmd, 'setupProject');
-    var config = {install: sinon.spy()};
-    var command = new Command({}, [], config);
+  it('should not do all the setup in the runInstall command', function() {
+    sinon.stub(bamCmd, 'setupProject').returns(Promise.resolve());
+    sinon.stub(bamCmd, 'runInstall').returns(Promise.resolve());
+    var command = new Command({}, []);
     return command.runInstall({setup: false}).then(function() {
-      expect(config.install.called).to.be.true;
+      expect(bamCmd.runInstall.called).to.be.true;
       expect(bamCmd.setupProject.called).to.be.false;
       bamCmd.setupProject.restore();
+      bamCmd.runInstall.restore();
     });
   });
 
   it('should do all the setup in the runInstall command', function() {
-    sinon.stub(bamCmd, 'setupProject');
-    var config = {install: sinon.spy(), dirName: process.cwd()};
-    var command = new Command({}, [], config);
-    return command.runInstall({setup: true, installLinked: false}).then(function() {
-      expect(config.install.called).to.be.false;
+    sinon.stub(bamCmd, 'setupProject').returns(Promise.resolve());
+    sinon.stub(bamCmd, 'runInstall').returns(Promise.resolve());
+
+    var command = new Command({}, []);
+    return command.runInstall({setup: true}).then(function() {
+      expect(bamCmd.runInstall.called).to.be.false;
       expect(bamCmd.setupProject.called).to.be.true;
       bamCmd.setupProject.restore();
+      bamCmd.runInstall.restore();
     });
   });
 
