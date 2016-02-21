@@ -7,6 +7,11 @@ var Command = require('../lib/commands');
 var bamCmd = require('../lib/bam-cmd');
 var Promise = require('bluebird');
 
+// clear console output
+var print = require('../lib/utils/print');
+print.msg = function(){};
+print.error = function(){};
+
 var defaultCommand = new Command({
   configPath: __dirname + '/fixtures/bam-default.js',
 });
