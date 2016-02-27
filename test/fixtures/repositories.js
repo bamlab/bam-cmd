@@ -44,4 +44,9 @@ module.exports = [
     repoFullName: 'git@github.com:orga/repoWithMaj.git',
     repoName: 'repoWithMaj'
   },
+  {
+    givenParam: 'git@github.com:foobar/v2.git',
+    repoFullName: 'git@github.com:foobar/v2.git',
+    repoName: 'v2'
+  },
 ];
