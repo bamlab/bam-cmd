@@ -41,7 +41,7 @@ describe('bam-cmd main module', function() {
 
   it('should throw Error on invalid name', function() {
     var fn = function() {
-      bamCmd.getRepositoryName('01123');
+      bamCmd.getRepositoryName(')');
     };
 
     expect(fn).to.throw(Error);
