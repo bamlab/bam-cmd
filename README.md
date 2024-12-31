@@ -1,10 +1,11 @@
+> **⚠️ Archived Repository**
+>
+> This repository has been **archived** and is no longer actively maintained.  
+> Feel free to explore the code and use it as needed, but note that no updates or support will be provided.
+
+
 Build Automation Manager
 ======================
-
-![Build status](https://img.shields.io/circleci/project/bamlab/bam-cmd/master.svg)
-![Release](https://img.shields.io/github/release/bamlab/bam-cmd.svg)
-![Climate](https://img.shields.io/codeclimate/github/bamlab/bam-cmd.svg)
-![Coverage](https://img.shields.io/codeclimate/coverage/github/bamlab/bam-cmd.svg)
 
 Make automatic build and install with a single command interface and plugins.
 
